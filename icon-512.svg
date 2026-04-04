@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#111111" />
+  <path
+    d="M99 302c0-14.7 11.9-26.7 26.7-26.7h22.7l35-72.5c8.8-18.2 27.2-29.5 47.3-29.5h98.7c20.1 0 38.5 11.3 47.3 29.5l35 72.5h22.7c14.7 0 26.7 12 26.7 26.7v53.3h-32a42.7 42.7 0 0 1-85.3 0H255a42.7 42.7 0 0 1-85.3 0H99V302Z"
+    fill="#f4f0e8"
+  />
+  <circle cx="154.7" cy="355.3" r="26.7" fill="#b64926" />
+  <circle cx="357.3" cy="355.3" r="26.7" fill="#b64926" />
+  <path
+    d="M208 210.7h96c10.8 0 20.4 6.1 25.2 16l18 33.3H164.8l18-33.3c4.8-9.9 14.4-16 25.2-16Z"
+    fill="#b64926"
+  />
+  <text x="256" y="132" text-anchor="middle" font-size="54" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#f4f0e8">MC</text>
+</svg>

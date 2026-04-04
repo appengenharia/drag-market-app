@@ -1,0 +1,211 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090909" />
+    <meta
+      name="description"
+      content="Marketplace de nicho para pecas, arrancada e carros antigos."
+    />
+    <title>market_car</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <main class="mobile-app" id="app" aria-live="polite">
+        <section class="view-card is-visible" data-view="home">
+          <header class="hero-top">
+            <div class="hero-brand">
+              <div class="brand-mark" aria-hidden="true">MC</div>
+              <div>
+                <p class="eyebrow">marketplace de nicho</p>
+                <h1>market_car</h1>
+              </div>
+            </div>
+            <div class="hero-actions">
+              <button class="icon-button" type="button" data-route="mensagens" aria-label="Mensagens">
+                MSG
+              </button>
+              <div class="hero-badge">V00</div>
+            </div>
+          </header>
+
+          <section class="hero-highlight">
+            <p class="hero-kicker">Arrancada | Pecas | Classicos</p>
+            <h2>O ponto de encontro para quem vive projeto, pista e carro antigo.</h2>
+          </section>
+
+          <button class="search-bar search-bar-main" type="button" data-route="categorias">
+            <span class="search-label">Buscar pecas, motores e projetos</span>
+            <span class="search-hint">Turbo, Weber, Opala, roda 15...</span>
+          </button>
+
+          <section class="category-strip" aria-label="Categorias em destaque">
+            <button class="category-pill is-active" type="button" data-route="categorias">Turbos</button>
+            <button class="category-pill" type="button" data-route="categorias">Motores</button>
+            <button class="category-pill" type="button" data-route="categorias">Suspensao</button>
+            <button class="category-pill" type="button" data-route="categorias">Classicos</button>
+          </section>
+
+          <section class="promo-banner" data-route="anunciar" role="button" tabindex="0">
+            <div class="promo-copy">
+              <p class="promo-tag">Banner promocional</p>
+              <h3>Anuncie em destaque seu produto</h3>
+              <p>
+                Coloque sua peca, roda ou projeto na frente de um publico que procura performance e carros antigos.
+              </p>
+              <span class="promo-cta">Quero anunciar</span>
+            </div>
+            <div class="promo-car" aria-hidden="true">
+              <span class="car-glow"></span>
+              <span class="car-mark">V8</span>
+            </div>
+          </section>
+
+          <section class="section-head">
+            <div>
+              <p class="section-label">Destaques</p>
+              <h3>Produtos em alta</h3>
+            </div>
+            <button class="ghost-link" type="button" data-route="categorias">Ver tudo</button>
+          </section>
+
+          <section class="listing-feed">
+            <article class="listing-card" data-route="detalhe">
+              <div class="listing-image image-engine">
+                <span class="listing-image-tag">Verificado</span>
+              </div>
+              <div class="listing-body">
+                <p class="listing-meta">Pecas de performance</p>
+                <h4>Kit Weber 40 para Opala 6cc</h4>
+                <p class="listing-location">Sao Paulo, SP</p>
+                <div class="listing-footer">
+                  <strong class="price-tag">R$ 4.500</strong>
+                  <span class="listing-badge">Top</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="listing-card" data-route="detalhe">
+              <div class="listing-image image-wheel">
+                <span class="listing-image-tag">Verificado</span>
+              </div>
+              <div class="listing-body">
+                <p class="listing-meta">Rodas e pneus</p>
+                <h4>Jogo de rodas vintage aro 15</h4>
+                <p class="listing-location">Curitiba, PR</p>
+                <div class="listing-footer">
+                  <strong class="price-tag">R$ 3.200</strong>
+                  <span class="listing-badge">Classico</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="listing-card" data-route="detalhe">
+              <div class="listing-image image-classic">
+                <span class="listing-image-tag">Projeto</span>
+              </div>
+              <div class="listing-body">
+                <p class="listing-meta">Carros de projeto</p>
+                <h4>Maverick V8 para projeto de pista</h4>
+                <p class="listing-location">Belo Horizonte, MG</p>
+                <div class="listing-footer">
+                  <strong class="price-tag">R$ 89.000</strong>
+                  <span class="listing-badge">Destaque</span>
+                </div>
+              </div>
+            </article>
+          </section>
+        </section>
+
+        <section class="view-card" data-view="categorias">
+          <section class="panel-screen">
+            <p class="section-label">Categorias</p>
+            <h3>Explore por estilo de preparacao</h3>
+            <div class="panel-grid">
+              <article class="panel-card">Turbo e aspirado</article>
+              <article class="panel-card">Freio e suspensao</article>
+              <article class="panel-card">Interior vintage</article>
+              <article class="panel-card">Projetos completos</article>
+            </div>
+          </section>
+        </section>
+
+        <section class="view-card" data-view="anunciar">
+          <section class="panel-screen">
+            <p class="section-label">Anunciar</p>
+            <h3>Base pronta para publicar anuncio</h3>
+            <form class="stack-form">
+              <label class="input-group">
+                <span>Titulo</span>
+                <input type="text" placeholder="Ex.: Comando para AP turbo" disabled />
+              </label>
+              <label class="input-group">
+                <span>Descricao</span>
+                <textarea rows="4" placeholder="Detalhes da peca ou carro" disabled></textarea>
+              </label>
+              <p class="helper-text">Publicacao real entra na V02. Upload de imagens entra na V03.</p>
+            </form>
+          </section>
+        </section>
+
+        <section class="view-card" data-view="mensagens">
+          <section class="panel-screen">
+            <p class="section-label">Mensagens</p>
+            <h3>Contato direto e rapido</h3>
+            <p class="panel-copy">
+              A V00 reserva esta area para conversas e atalhos de contato. O fluxo comercial continua direto, com destaque para WhatsApp.
+            </p>
+            <a class="primary-link" href="https://wa.me/5500000000000" target="_blank" rel="noreferrer">
+              Abrir contato placeholder
+            </a>
+          </section>
+        </section>
+
+        <section class="view-card" data-view="perfil">
+          <section class="panel-screen">
+            <p class="section-label">Perfil</p>
+            <h3>Area do usuario preparada</h3>
+            <p class="panel-copy">
+              Aqui entram dados do usuario, anuncios e reputacao quando as proximas versoes forem implementadas.
+            </p>
+          </section>
+        </section>
+
+        <section class="view-card" data-view="detalhe">
+          <section class="panel-screen">
+            <p class="section-label">Detalhe do anuncio</p>
+            <h3>Visual de anuncio pronto para evoluir</h3>
+            <div class="detail-card">
+              <div class="detail-image">Galeria do anuncio</div>
+              <div class="detail-copy">
+                <p class="listing-meta">Performance | Arrancada</p>
+                <h4>Kit Weber 40 para Opala 6cc</h4>
+                <strong class="price-tag">R$ 4.500</strong>
+                <p class="panel-copy">
+                  Layout pronto para titulo, preco, descricao, fotos e contato do vendedor sem avancar para cadastro ou publicacao real.
+                </p>
+                <a class="primary-link" href="https://wa.me/5500000000000" target="_blank" rel="noreferrer">
+                  Contato via WhatsApp
+                </a>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="Navegacao principal">
+        <button class="nav-link is-current" type="button" data-route="home">Inicio</button>
+        <button class="nav-link" type="button" data-route="categorias">Categorias</button>
+        <button class="nav-link nav-link-accent" type="button" data-route="anunciar">Anunciar</button>
+        <button class="nav-link" type="button" data-route="mensagens">Mensagens</button>
+        <button class="nav-link" type="button" data-route="perfil">Perfil</button>
+      </nav>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
