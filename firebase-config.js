@@ -22,6 +22,15 @@
       auth: false,
       firestore: false,
       storage: false
+    },
+    plannedCollections: {
+      users: 'users',
+      ads: 'ads'
+    },
+    plannedFlows: {
+      signIn: 'email-password',
+      signUp: 'email-password',
+      ads: 'draft-to-firestore'
     }
   };
 })();
