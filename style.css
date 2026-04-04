@@ -16,10 +16,10 @@
   --radius-lg: 22px;
   --radius-md: 18px;
   --radius-sm: 14px;
-  --content-max: 1240px;
-  --content-tablet: 920px;
-  --content-mobile: 430px;
-  --nav-max: 780px;
+  --content-max: 1320px;
+  --content-tablet: 960px;
+  --content-mobile: 440px;
+  --nav-max: 860px;
 }
 
 * {
@@ -53,7 +53,7 @@ button {
 
 .app-shell {
   min-height: 100vh;
-  padding: 12px 12px 96px;
+  padding: clamp(12px, 3vw, 24px) clamp(12px, 3.5vw, 24px) 104px;
 }
 
 .mobile-app {
@@ -89,7 +89,7 @@ button {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 18px 18px 6px;
+  padding: 18px 18px 8px;
 }
 
 .eyebrow,
@@ -172,7 +172,7 @@ button {
 }
 
 .hero-highlight {
-  padding: 8px 18px 0;
+  padding: 10px 18px 0;
 }
 
 .hero-kicker {
@@ -186,7 +186,7 @@ button {
 
 .hero-highlight h2 {
   margin: 0;
-  max-width: 320px;
+  max-width: 34rem;
   font-size: clamp(1.38rem, 5vw, 1.8rem);
   line-height: 1.1;
 }
@@ -209,6 +209,7 @@ button {
   background:
     linear-gradient(180deg, rgba(255, 43, 49, 0.1), rgba(255, 43, 49, 0)),
     linear-gradient(180deg, #1b1c1f 0%, #111214 100%);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28);
 }
 
 .search-label {
@@ -244,6 +245,7 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 0.8rem;
   font-weight: 700;
+  flex: 0 0 auto;
 }
 
 .category-pill.is-active {
@@ -261,6 +263,7 @@ button {
   background:
     linear-gradient(135deg, rgba(209, 21, 26, 0.4), rgba(255, 43, 49, 0.08)),
     linear-gradient(180deg, #1a1b1f 0%, #0f1012 100%);
+  align-items: center;
 }
 
 .promo-banner[role="button"] {
@@ -277,6 +280,7 @@ button {
   margin: 0;
   color: #d2d4d9;
   line-height: 1.5;
+  max-width: 34ch;
 }
 
 .promo-cta {
@@ -358,6 +362,7 @@ button {
   display: grid;
   gap: 14px;
   grid-template-columns: 1fr;
+  align-items: stretch;
 }
 
 .listing-card {
@@ -370,6 +375,7 @@ button {
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
     linear-gradient(180deg, #1a1b1f 0%, #101113 100%);
   color: inherit;
+  height: 100%;
 }
 
 .listing-card[data-route] {
@@ -432,7 +438,7 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 6px;
+  gap: 8px;
 }
 
 .listing-body h4 {
@@ -470,6 +476,7 @@ button {
   padding: 22px 18px;
   border-radius: var(--radius-xl);
   background: linear-gradient(180deg, #17181b 0%, #0f1012 100%);
+  max-width: 100%;
 }
 
 .panel-grid {
@@ -573,6 +580,7 @@ button {
   font-size: clamp(0.75rem, 2.7vw, 0.84rem);
   font-weight: 700;
   transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  white-space: nowrap;
 }
 
 .nav-link.is-current {
@@ -628,15 +636,22 @@ button {
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .app-shell {
-    padding: 20px 20px 118px;
+    padding: 20px 20px 122px;
   }
 
   .mobile-app {
     width: min(100%, var(--content-tablet));
   }
 
+  .view-card[data-view="home"].is-visible {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+  }
+
   .hero-top {
     padding: 22px 24px 12px;
+    align-items: flex-start;
   }
 
   .hero-highlight {
@@ -649,16 +664,18 @@ button {
 
   .search-bar-main {
     padding: 20px 22px 22px;
+    max-width: 100%;
   }
 
   .category-strip {
     flex-wrap: wrap;
     overflow: visible;
+    gap: 12px;
   }
 
   .promo-banner {
-    min-height: 240px;
-    grid-template-columns: minmax(0, 1.2fr) minmax(180px, 0.8fr);
+    min-height: 250px;
+    grid-template-columns: minmax(0, 1.1fr) minmax(180px, 0.9fr);
     align-items: stretch;
   }
 
@@ -668,6 +685,21 @@ button {
 
   .listing-feed {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .listing-card {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .listing-image {
+    min-height: 180px;
+  }
+
+  .listing-body {
+    gap: 10px;
   }
 
   .panel-grid,
@@ -678,7 +710,7 @@ button {
   .bottom-nav {
     width: min(calc(100% - 40px), 720px);
     bottom: 16px;
-    padding: 12px;
+    padding: 12px 14px;
     gap: 10px;
   }
 
@@ -690,7 +722,7 @@ button {
 
 @media (min-width: 1024px) {
   .app-shell {
-    padding: 24px 24px 124px;
+    padding: 24px 24px 128px;
   }
 
   .mobile-app {
@@ -699,8 +731,9 @@ button {
 
   .view-card[data-view="home"].is-visible {
     display: grid;
-    grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr);
-    column-gap: 24px;
+    grid-template-columns: minmax(0, 1.14fr) minmax(360px, 0.86fr);
+    column-gap: 28px;
+    row-gap: 0;
     align-items: start;
   }
 
@@ -715,13 +748,14 @@ button {
     grid-column: 2;
     grid-row: 1 / span 4;
     margin-top: 0;
-    min-height: 100%;
+    min-height: 420px;
     align-self: stretch;
     grid-template-columns: 1fr;
+    align-content: space-between;
   }
 
   .promo-car {
-    min-height: 240px;
+    min-height: 260px;
   }
 
   .hero-top {
@@ -733,17 +767,19 @@ button {
   }
 
   .hero-highlight h2 {
-    max-width: 680px;
+    max-width: 760px;
   }
 
   .search-bar-main {
-    max-width: 760px;
+    max-width: 840px;
     padding: 20px 22px 22px;
   }
 
   .category-strip {
+    max-width: 840px;
     flex-wrap: wrap;
     overflow: visible;
+    gap: 12px;
   }
 
   .section-head,
@@ -757,6 +793,21 @@ button {
 
   .listing-feed {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .listing-card {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .listing-image {
+    min-height: 210px;
+  }
+
+  .listing-body {
+    gap: 10px;
   }
 
   .panel-screen {
@@ -775,7 +826,7 @@ button {
   .bottom-nav {
     width: min(calc(100% - 48px), var(--nav-max));
     bottom: 18px;
-    padding: 12px;
+    padding: 12px 14px;
     gap: 12px;
   }
 
