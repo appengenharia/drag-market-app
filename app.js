@@ -13,7 +13,7 @@
     account: 'marketCarAccount',
     session: 'marketCarSession',
     drafts: 'marketCarDrafts',
-    legalAccepted: 'marketCarLegalAccepted'
+    legalAccepted: 'accepted_terms'
   };
 
   var state = {
@@ -25,7 +25,8 @@
     user: null,
     drafts: [],
     legalAccepted: false,
-    pendingAction: null
+    pendingAction: null,
+    authPanelOpen: false
   };
 
   var viewCards = document.querySelectorAll('[data-view]');
@@ -83,6 +84,7 @@
   var catalogMatchCopy = document.getElementById('catalog-match-copy');
   var catalogMatchList = document.getElementById('catalog-match-list');
   var quickAuthPanel = document.getElementById('quick-auth-panel');
+  var quickAuthHandle = document.getElementById('quick-auth-handle');
   var quickAuthGuest = document.getElementById('quick-auth-guest');
   var quickAuthUser = document.getElementById('quick-auth-user');
   var quickLoginForm = document.getElementById('quick-login-form');
@@ -262,11 +264,34 @@
     window.localStorage.setItem(key, JSON.stringify(value));
   }
 
+  function readAcceptedTerms() {
+    var currentValue = window.localStorage.getItem(storageKeys.legalAccepted);
+    var legacyValue = window.localStorage.getItem('marketCarLegalAccepted');
+
+    function isAcceptedValue(value) {
+      return value === 'true' || value === '"true"';
+    }
+
+    return isAcceptedValue(currentValue) || isAcceptedValue(legacyValue);
+  }
+
+  function setAuthPanelOpen(isOpen) {
+    state.authPanelOpen = Boolean(isOpen);
+
+    if (!quickAuthPanel) {
+      return;
+    }
+
+    quickAuthPanel.classList.toggle('is-open', state.authPanelOpen);
+    quickAuthPanel.setAttribute('aria-expanded', state.authPanelOpen ? 'true' : 'false');
+    document.body.classList.toggle('auth-panel-open', state.authPanelOpen);
+  }
+
   function loadState() {
     state.account = normalizeAccount(readStorage(storageKeys.account, null));
     state.user = normalizeAccount(readStorage(storageKeys.session, null));
     state.drafts = readStorage(storageKeys.drafts, []);
-    state.legalAccepted = Boolean(readStorage(storageKeys.legalAccepted, false));
+    state.legalAccepted = readAcceptedTerms();
   }
 
   function persistAccount(account) {
@@ -307,10 +332,7 @@
       return;
     }
 
-    quickAuthPanel.scrollIntoView({
-      block: 'nearest',
-      behavior: 'smooth'
-    });
+    setAuthPanelOpen(true);
 
     window.setTimeout(function () {
       quickLoginEmail.focus();
@@ -614,6 +636,7 @@
     }
 
     legalBanner.hidden = state.legalAccepted;
+    legalBanner.classList.toggle('is-hidden', state.legalAccepted);
     document.body.classList.toggle('has-legal-banner', !state.legalAccepted);
   }
 
@@ -779,7 +802,13 @@
   }
 
   function goTo(route) {
-    if (normalizeRoute(route) === 'anunciar' && !state.user) {
+    var nextRoute = normalizeRoute(route);
+
+    if (nextRoute === 'perfil') {
+      setAuthPanelOpen(true);
+    }
+
+    if (nextRoute === 'anunciar' && !state.user) {
       promptQuickAuth('Entre para anunciar seus produtos.', {
         type: 'route',
         route: 'anunciar'
@@ -787,8 +816,8 @@
       return;
     }
 
-    updateView(route);
-    syncHash(route);
+    updateView(nextRoute);
+    syncHash(nextRoute);
   }
 
   function bindNavigation() {
@@ -935,6 +964,19 @@
   }
 
   function bindQuickAuthPanel() {
+    if (quickAuthHandle) {
+      quickAuthHandle.addEventListener('click', function (event) {
+        event.stopPropagation();
+        setAuthPanelOpen(!state.authPanelOpen);
+
+        if (state.authPanelOpen && !state.user && quickLoginEmail) {
+          window.setTimeout(function () {
+            quickLoginEmail.focus();
+          }, 50);
+        }
+      });
+    }
+
     if (quickLoginForm) {
       quickLoginForm.addEventListener('submit', async function (event) {
         var loginResult;
@@ -971,6 +1013,26 @@
         logoutCurrentUser('Sessao encerrada no acesso rapido.');
       });
     }
+
+    document.addEventListener('click', function (event) {
+      var clickedProfileTrigger = event.target.closest('[data-route="perfil"]');
+
+      if (!state.authPanelOpen || !quickAuthPanel) {
+        return;
+      }
+
+      if (quickAuthPanel.contains(event.target) || clickedProfileTrigger) {
+        return;
+      }
+
+      setAuthPanelOpen(false);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && state.authPanelOpen) {
+        setAuthPanelOpen(false);
+      }
+    });
   }
 
   function bindLegalBanner() {
@@ -980,7 +1042,9 @@
 
     acceptLegalButton.addEventListener('click', function () {
       state.legalAccepted = true;
-      writeStorage(storageKeys.legalAccepted, true);
+      window.localStorage.setItem(storageKeys.legalAccepted, 'true');
+      window.localStorage.removeItem('marketCarLegalAccepted');
+      legalBanner.hidden = true;
       renderLegalBanner();
     });
   }

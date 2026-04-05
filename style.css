@@ -26,6 +26,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -499,19 +503,15 @@ button {
 }
 
 body.has-legal-banner .app-shell {
-  padding-bottom: 360px;
+  padding-bottom: 200px;
 }
 
 body:not(.has-legal-banner) .app-shell {
-  padding-bottom: 280px;
+  padding-bottom: 120px;
 }
 
 body.has-legal-banner .bottom-nav {
   bottom: 82px;
-}
-
-body.has-legal-banner .quick-auth-panel {
-  bottom: 168px;
 }
 
 .catalog-shell {
@@ -729,19 +729,44 @@ body.has-legal-banner .quick-auth-panel {
   position: fixed;
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
-  background: linear-gradient(180deg, rgba(25, 26, 30, 0.98) 0%, rgba(14, 15, 17, 0.98) 100%);
+  background: linear-gradient(180deg, rgba(25, 26, 30, 0.94) 0%, rgba(14, 15, 17, 0.94) 100%);
   backdrop-filter: blur(16px);
-  z-index: 30;
 }
 
 .quick-auth-panel {
-  right: 12px;
-  bottom: 108px;
-  width: min(calc(100% - 24px), 340px);
+  top: clamp(96px, 14vh, 132px);
+  left: 0;
+  width: min(310px, calc(100% - 56px));
   display: grid;
   gap: 14px;
   padding: 18px;
-  border-radius: 22px;
+  border-radius: 0 22px 22px 0;
+  transform: translateX(calc(-100% + 18px));
+  transition: transform 0.28s ease, box-shadow 0.28s ease, background-color 0.28s ease;
+  z-index: 28;
+}
+
+.quick-auth-panel:hover,
+.quick-auth-panel:focus-within,
+.quick-auth-panel.is-open {
+  transform: translateX(0);
+}
+
+.quick-auth-handle {
+  position: absolute;
+  top: 20px;
+  right: -42px;
+  width: 42px;
+  height: 136px;
+  border-radius: 0 16px 16px 0;
+  background: linear-gradient(180deg, rgba(209, 21, 26, 0.94), rgba(120, 11, 14, 0.92));
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
 }
 
 .quick-auth-panel h3,
@@ -779,6 +804,7 @@ body.has-legal-banner .quick-auth-panel {
   gap: 12px;
   padding: 14px 16px;
   border-radius: 22px;
+  z-index: 26;
 }
 
 .legal-copy {
@@ -1151,8 +1177,8 @@ body.has-legal-banner .quick-auth-panel {
   }
 
   .quick-auth-panel {
-    right: 20px;
-    width: min(calc(100% - 40px), 360px);
+    width: min(320px, calc(100% - 72px));
+    top: 104px;
   }
 
   .legal-banner {
@@ -1329,8 +1355,8 @@ body.has-legal-banner .quick-auth-panel {
   }
 
   .quick-auth-panel {
-    right: 24px;
-    width: min(360px, calc(100% - 48px));
+    width: 320px;
+    top: 112px;
   }
 
   .quick-auth-actions {
