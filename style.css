@@ -547,6 +547,65 @@ button {
   gap: 12px;
 }
 
+.catalog-toolbar,
+.catalog-search-box,
+.catalog-matchbox,
+.catalog-match-list {
+  display: grid;
+  gap: 12px;
+}
+
+.catalog-toolbar {
+  align-items: start;
+}
+
+.catalog-search-box,
+.catalog-matchbox {
+  padding: 18px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #191a1e 0%, #111214 100%);
+  border: 1px solid var(--line);
+}
+
+.catalog-search-input {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 18px;
+  border-radius: 16px;
+  border: 1px solid var(--line-strong);
+  background: #0f1012;
+  color: var(--text);
+  outline: none;
+}
+
+.catalog-search-input:focus {
+  border-color: rgba(255, 43, 49, 0.42);
+  box-shadow: 0 0 0 3px rgba(255, 43, 49, 0.1);
+}
+
+.catalog-matchbox h4 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.catalog-match-list {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.catalog-match-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 43, 49, 0.12);
+  border: 1px solid rgba(255, 43, 49, 0.16);
+  color: #ffe3e3;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .catalog-grid {
   grid-template-columns: 1fr;
 }
@@ -962,6 +1021,10 @@ button {
     gap: 16px;
   }
 
+  .catalog-toolbar {
+    grid-template-columns: minmax(0, 1.05fr) minmax(260px, 0.95fr);
+  }
+
   .catalog-card {
     padding: 16px;
   }
@@ -1104,6 +1167,10 @@ button {
   .catalog-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 18px;
+  }
+
+  .catalog-toolbar {
+    grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.92fr);
   }
 
   .catalog-card {

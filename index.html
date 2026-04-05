@@ -161,6 +161,28 @@
                   </p>
                 </header>
 
+                <section class="catalog-toolbar" aria-label="Busca por nome da peca">
+                  <label class="catalog-search-box" for="catalog-search-input">
+                    <span class="section-label">Busca por nome</span>
+                    <input
+                      class="catalog-search-input"
+                      type="search"
+                      id="catalog-search-input"
+                      placeholder="Digite o nome da peca"
+                      autocomplete="off"
+                    />
+                  </label>
+
+                  <article class="catalog-matchbox" aria-live="polite">
+                    <p class="section-label">Retorno rapido</p>
+                    <h4 id="catalog-match-title">Digite o nome da peca</h4>
+                    <p class="panel-copy" id="catalog-match-copy">
+                      O catalogo retorna aqui o nome exato ou aproximado encontrado na busca.
+                    </p>
+                    <div class="catalog-match-list" id="catalog-match-list"></div>
+                  </article>
+                </section>
+
                 <div class="catalog-grid">
                   <article class="listing-card catalog-card" data-route="detalhe" data-category="Turbos">
                     <div class="listing-image catalog-image image-engine">

@@ -18,6 +18,7 @@
   var state = {
     currentRoute: 'home',
     currentCategory: 'Todos',
+    currentSearch: '',
     authMode: 'login',
     account: null,
     user: null,
@@ -70,6 +71,10 @@
   var catalogCards = document.querySelectorAll('.catalog-card[data-category]');
   var catalogTitle = document.getElementById('catalog-title');
   var catalogDescription = document.getElementById('catalog-description');
+  var catalogSearchInput = document.getElementById('catalog-search-input');
+  var catalogMatchTitle = document.getElementById('catalog-match-title');
+  var catalogMatchCopy = document.getElementById('catalog-match-copy');
+  var catalogMatchList = document.getElementById('catalog-match-list');
 
   function normalizeRoute(route) {
     return Object.prototype.hasOwnProperty.call(routes, route) ? route : 'home';
@@ -83,6 +88,14 @@
     return String(category).trim().toLowerCase();
   }
 
+  function normalizeText(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
+  }
+
   function getCategoryLabel(category) {
     var normalizedCategory = normalizeCategory(category);
     var categorySource = Array.prototype.slice.call(catalogLinks).find(function (button) {
@@ -94,6 +107,53 @@
 
   function setCurrentCategory(category) {
     state.currentCategory = getCategoryLabel(category);
+  }
+
+  function getCardTitle(card) {
+    var titleElement = card.querySelector('h4');
+    return titleElement ? titleElement.textContent.trim() : '';
+  }
+
+  function getSearchMatch(title, term) {
+    var normalizedTitle = normalizeText(title);
+    var normalizedTerm = normalizeText(term);
+    var titleWords;
+    var searchWords;
+    var approximateMatch;
+
+    if (!normalizedTerm) {
+      return {
+        isMatch: true,
+        isExact: false
+      };
+    }
+
+    if (normalizedTitle === normalizedTerm) {
+      return {
+        isMatch: true,
+        isExact: true
+      };
+    }
+
+    if (normalizedTitle.indexOf(normalizedTerm) !== -1) {
+      return {
+        isMatch: true,
+        isExact: false
+      };
+    }
+
+    titleWords = normalizedTitle.split(/\s+/);
+    searchWords = normalizedTerm.split(/\s+/).filter(Boolean);
+    approximateMatch = searchWords.every(function (word) {
+      return titleWords.some(function (titleWord) {
+        return titleWord.indexOf(word) !== -1 || word.indexOf(titleWord) !== -1;
+      });
+    });
+
+    return {
+      isMatch: approximateMatch,
+      isExact: false
+    };
   }
 
   function normalizeAccount(account) {
@@ -349,6 +409,9 @@
   function renderCatalog() {
     var activeCategory = normalizeCategory(state.currentCategory);
     var visibleCards = 0;
+    var searchTerm = normalizeText(state.currentSearch);
+    var matchedTitles = [];
+    var exactMatchTitle = '';
 
     categoryPills.forEach(function (button) {
       button.classList.toggle('is-active', normalizeCategory(button.dataset.category) === activeCategory);
@@ -361,13 +424,24 @@
     });
 
     catalogCards.forEach(function (card) {
-      var shouldShow = activeCategory === 'todos' || normalizeCategory(card.dataset.category) === activeCategory;
+      var title = getCardTitle(card);
+      var categoryMatches = activeCategory === 'todos' || normalizeCategory(card.dataset.category) === activeCategory;
+      var searchMatch = getSearchMatch(title, searchTerm);
+      var shouldShow = categoryMatches && searchMatch.isMatch;
       card.hidden = !shouldShow;
 
       if (shouldShow) {
         visibleCards += 1;
+        matchedTitles.push(title);
+        if (!exactMatchTitle && searchMatch.isExact) {
+          exactMatchTitle = title;
+        }
       }
     });
+
+    if (catalogSearchInput && catalogSearchInput.value !== state.currentSearch) {
+      catalogSearchInput.value = state.currentSearch;
+    }
 
     if (catalogTitle) {
       catalogTitle.textContent = activeCategory === 'todos'
@@ -381,8 +455,49 @@
         : 'Exibindo anuncios de ' + getCategoryLabel(state.currentCategory).toLowerCase() + ' com leitura rapida de imagem, preco e resumo.';
     }
 
-    if (!visibleCards && catalogDescription) {
+    if (searchTerm && catalogDescription) {
+      catalogDescription.textContent = visibleCards
+        ? 'Busca ativa por "' + state.currentSearch + '" com ' + visibleCards + ' resultado(s) visivel(is) na grade.'
+        : 'Nenhum anuncio encontrado para "' + state.currentSearch + '" nesta categoria.';
+    } else if (!visibleCards && catalogDescription) {
       catalogDescription.textContent = 'Ainda nao existem anuncios mockados para essa categoria na V01.';
+    }
+
+    if (catalogMatchTitle) {
+      if (!searchTerm) {
+        catalogMatchTitle.textContent = 'Digite o nome da peca';
+      } else if (exactMatchTitle) {
+        catalogMatchTitle.textContent = exactMatchTitle;
+      } else if (matchedTitles.length) {
+        catalogMatchTitle.textContent = matchedTitles[0];
+      } else {
+        catalogMatchTitle.textContent = 'Nenhum nome encontrado';
+      }
+    }
+
+    if (catalogMatchCopy) {
+      if (!searchTerm) {
+        catalogMatchCopy.textContent = 'O catalogo retorna aqui o nome exato ou aproximado encontrado na busca.';
+      } else if (exactMatchTitle) {
+        catalogMatchCopy.textContent = 'Resultado exato localizado no catalogo.';
+      } else if (matchedTitles.length) {
+        catalogMatchCopy.textContent = 'Resultado aproximado localizado pelo nome digitado.';
+      } else {
+        catalogMatchCopy.textContent = 'Tente outro nome ou remova filtros para ampliar a busca.';
+      }
+    }
+
+    if (catalogMatchList) {
+      if (!searchTerm || !matchedTitles.length) {
+        catalogMatchList.innerHTML = '';
+      } else {
+        catalogMatchList.innerHTML = matchedTitles
+          .slice(0, 3)
+          .map(function (title) {
+            return '<span class="catalog-match-chip">' + title + '</span>';
+          })
+          .join('');
+      }
     }
   }
 
@@ -455,6 +570,17 @@
         setCurrentCategory(button.dataset.category);
         renderCatalog();
       });
+    });
+  }
+
+  function bindCatalogSearch() {
+    if (!catalogSearchInput) {
+      return;
+    }
+
+    catalogSearchInput.addEventListener('input', function () {
+      state.currentSearch = catalogSearchInput.value.trim();
+      renderCatalog();
     });
   }
 
@@ -641,6 +767,7 @@
     bindNavigation();
     bindCards();
     bindCategoryFilters();
+    bindCatalogSearch();
     bindAuthSwitch();
     bindAuthForms();
     bindProfileActions();
