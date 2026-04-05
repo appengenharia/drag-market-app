@@ -412,6 +412,10 @@
                     <span>E-mail</span>
                     <input type="email" id="login-email" placeholder="voce@marketcar.com" required />
                   </label>
+                  <label class="input-group">
+                    <span>Senha</span>
+                    <input type="password" id="login-password" placeholder="Sua senha" required />
+                  </label>
                   <button class="primary-button" type="submit">Entrar</button>
                 </form>
 
@@ -427,6 +431,10 @@
                   <label class="input-group">
                     <span>Telefone</span>
                     <input type="text" id="register-phone" placeholder="(00) 00000-0000" required />
+                  </label>
+                  <label class="input-group">
+                    <span>Senha</span>
+                    <input type="password" id="register-password" placeholder="Crie uma senha" required />
                   </label>
                   <button class="primary-button" type="submit">Criar conta</button>
                 </form>
@@ -529,9 +537,17 @@
                 <p class="panel-copy">
                   Layout pronto para titulo, preco, descricao, fotos e contato do vendedor sem avancar para cadastro ou publicacao real.
                 </p>
-                <a class="primary-link" href="https://wa.me/5500000000000" target="_blank" rel="noreferrer">
+                <button
+                  class="primary-button"
+                  type="button"
+                  id="detail-contact-button"
+                  data-contact-href="https://wa.me/5500000000000"
+                >
                   Contato via WhatsApp
-                </a>
+                </button>
+                <p class="helper-text status-text" id="detail-contact-status">
+                  Entre para liberar o contato com o vendedor.
+                </p>
               </div>
             </div>
           </section>
@@ -545,6 +561,52 @@
         <button class="nav-link" type="button" data-route="mensagens">Mensagens</button>
         <button class="nav-link" type="button" data-route="perfil">Perfil</button>
       </nav>
+
+      <aside class="quick-auth-panel" id="quick-auth-panel" aria-label="Acesso rapido">
+        <section class="quick-auth-guest" id="quick-auth-guest">
+          <p class="section-label">Acesso rapido</p>
+          <h3>Entrar</h3>
+
+          <form class="quick-auth-form" id="quick-login-form">
+            <label class="input-group">
+              <span>E-mail</span>
+              <input type="email" id="quick-login-email" placeholder="voce@marketcar.com" required />
+            </label>
+            <label class="input-group">
+              <span>Senha</span>
+              <input type="password" id="quick-login-password" placeholder="Sua senha" required />
+            </label>
+            <button class="primary-button" type="submit">Entrar</button>
+          </form>
+
+          <div class="quick-auth-links">
+            <button class="ghost-link quick-auth-link" type="button" data-auth-shortcut="register">Criar conta</button>
+            <button class="ghost-link quick-auth-link" type="button" id="quick-forgot-password">Esqueci minha senha</button>
+          </div>
+
+          <p class="helper-text status-text" id="quick-auth-status">
+            Acesso local preparado para futura conexao com Firebase Authentication.
+          </p>
+        </section>
+
+        <section class="quick-auth-user" id="quick-auth-user" hidden>
+          <p class="section-label">Conta ativa</p>
+          <h3 id="quick-user-name">Usuario conectado</h3>
+          <p class="panel-copy" id="quick-user-meta">Conta local pronta para continuar.</p>
+
+          <div class="quick-auth-actions">
+            <button class="primary-button" type="button" data-route="perfil">Abrir perfil</button>
+            <button class="ghost-button" type="button" id="quick-logout-button">Sair</button>
+          </div>
+        </section>
+      </aside>
+
+      <section class="legal-banner" id="legal-banner" aria-label="Termos e privacidade">
+        <p class="legal-copy">
+          Ao continuar, voce aceita nossos termos de uso e a politica de privacidade da plataforma.
+        </p>
+        <button class="primary-button" type="button" id="accept-legal-button">Aceitar</button>
+      </section>
     </div>
 
     <script src="firebase-config.js"></script>

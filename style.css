@@ -498,6 +498,22 @@ button {
   gap: 14px;
 }
 
+body.has-legal-banner .app-shell {
+  padding-bottom: 360px;
+}
+
+body:not(.has-legal-banner) .app-shell {
+  padding-bottom: 280px;
+}
+
+body.has-legal-banner .bottom-nav {
+  bottom: 82px;
+}
+
+body.has-legal-banner .quick-auth-panel {
+  bottom: 168px;
+}
+
 .catalog-shell {
   gap: 18px;
 }
@@ -706,6 +722,68 @@ button {
 
 .primary-link {
   margin-top: 16px;
+}
+
+.quick-auth-panel,
+.legal-banner {
+  position: fixed;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  background: linear-gradient(180deg, rgba(25, 26, 30, 0.98) 0%, rgba(14, 15, 17, 0.98) 100%);
+  backdrop-filter: blur(16px);
+  z-index: 30;
+}
+
+.quick-auth-panel {
+  right: 12px;
+  bottom: 108px;
+  width: min(calc(100% - 24px), 340px);
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 22px;
+}
+
+.quick-auth-panel h3,
+.legal-banner p {
+  margin: 0;
+}
+
+.quick-auth-form,
+.quick-auth-actions {
+  display: grid;
+  gap: 12px;
+}
+
+.quick-auth-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.quick-auth-link {
+  min-height: auto;
+}
+
+.quick-auth-user .primary-button,
+.quick-auth-user .ghost-button,
+.quick-auth-form .primary-button {
+  width: 100%;
+}
+
+.legal-banner {
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 22px;
+}
+
+.legal-copy {
+  color: var(--text-soft);
+  line-height: 1.5;
 }
 
 .status-text.is-success {
@@ -1071,6 +1149,18 @@ button {
     min-height: 60px;
     padding-inline: 12px;
   }
+
+  .quick-auth-panel {
+    right: 20px;
+    width: min(calc(100% - 40px), 360px);
+  }
+
+  .legal-banner {
+    left: 20px;
+    right: 20px;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: center;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -1236,5 +1326,19 @@ button {
   .nav-link {
     min-height: 62px;
     padding-inline: 14px;
+  }
+
+  .quick-auth-panel {
+    right: 24px;
+    width: min(360px, calc(100% - 48px));
+  }
+
+  .quick-auth-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .legal-banner {
+    left: 24px;
+    right: 24px;
   }
 }

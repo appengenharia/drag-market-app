@@ -12,7 +12,8 @@
   var storageKeys = {
     account: 'marketCarAccount',
     session: 'marketCarSession',
-    drafts: 'marketCarDrafts'
+    drafts: 'marketCarDrafts',
+    legalAccepted: 'marketCarLegalAccepted'
   };
 
   var state = {
@@ -22,7 +23,9 @@
     authMode: 'login',
     account: null,
     user: null,
-    drafts: []
+    drafts: [],
+    legalAccepted: false,
+    pendingAction: null
   };
 
   var viewCards = document.querySelectorAll('[data-view]');
@@ -32,8 +35,10 @@
   var authForms = document.querySelectorAll('[data-auth-form]');
   var authShortcuts = document.querySelectorAll('[data-auth-shortcut]');
   var loginForm = document.getElementById('login-form');
+  var loginPassword = document.getElementById('login-password');
   var registerForm = document.getElementById('register-form');
   var registerPhone = document.getElementById('register-phone');
+  var registerPassword = document.getElementById('register-password');
   var authEntry = document.getElementById('auth-entry');
   var authStatus = document.getElementById('auth-status');
   var profileSummary = document.getElementById('profile-summary');
@@ -66,6 +71,8 @@
   var adPrice = document.getElementById('ad-price');
   var adLocation = document.getElementById('ad-location');
   var adDescription = document.getElementById('ad-description');
+  var detailContactButton = document.getElementById('detail-contact-button');
+  var detailContactStatus = document.getElementById('detail-contact-status');
   var categoryPills = document.querySelectorAll('.category-pill[data-category]');
   var catalogLinks = document.querySelectorAll('.catalog-link[data-category]');
   var catalogCards = document.querySelectorAll('.catalog-card[data-category]');
@@ -75,6 +82,19 @@
   var catalogMatchTitle = document.getElementById('catalog-match-title');
   var catalogMatchCopy = document.getElementById('catalog-match-copy');
   var catalogMatchList = document.getElementById('catalog-match-list');
+  var quickAuthPanel = document.getElementById('quick-auth-panel');
+  var quickAuthGuest = document.getElementById('quick-auth-guest');
+  var quickAuthUser = document.getElementById('quick-auth-user');
+  var quickLoginForm = document.getElementById('quick-login-form');
+  var quickLoginEmail = document.getElementById('quick-login-email');
+  var quickLoginPassword = document.getElementById('quick-login-password');
+  var quickAuthStatus = document.getElementById('quick-auth-status');
+  var quickForgotPassword = document.getElementById('quick-forgot-password');
+  var quickUserName = document.getElementById('quick-user-name');
+  var quickUserMeta = document.getElementById('quick-user-meta');
+  var quickLogoutButton = document.getElementById('quick-logout-button');
+  var legalBanner = document.getElementById('legal-banner');
+  var acceptLegalButton = document.getElementById('accept-legal-button');
 
   function normalizeRoute(route) {
     return Object.prototype.hasOwnProperty.call(routes, route) ? route : 'home';
@@ -94,6 +114,55 @@
       .replace(/[\u0300-\u036f]/g, '')
       .trim()
       .toLowerCase();
+  }
+
+  function canUseSecureAuth() {
+    return Boolean(window.crypto && window.crypto.subtle && window.crypto.getRandomValues);
+  }
+
+  function bytesToHex(buffer) {
+    return Array.prototype.map.call(new Uint8Array(buffer), function (byte) {
+      return byte.toString(16).padStart(2, '0');
+    }).join('');
+  }
+
+  function createSalt() {
+    var values = new Uint8Array(16);
+    window.crypto.getRandomValues(values);
+    return bytesToHex(values);
+  }
+
+  function hasLocalPassword(account) {
+    return Boolean(account && account.passwordSalt && account.passwordHash);
+  }
+
+  async function createPasswordHash(password, salt) {
+    var encoder = new TextEncoder();
+    var payload = encoder.encode(salt + ':' + password);
+    var digest = await window.crypto.subtle.digest('SHA-256', payload);
+    return bytesToHex(digest);
+  }
+
+  async function buildLocalCredentials(password) {
+    var salt = createSalt();
+    var hash = await createPasswordHash(password, salt);
+
+    return {
+      passwordSalt: salt,
+      passwordHash: hash,
+      authProvider: 'local-prototype',
+      authPreparedFor: 'firebase-auth'
+    };
+  }
+
+  async function verifyLocalPassword(account, password) {
+    if (!hasLocalPassword(account)) {
+      return false;
+    }
+
+    return createPasswordHash(password, account.passwordSalt).then(function (hash) {
+      return hash === account.passwordHash;
+    });
   }
 
   function getCategoryLabel(category) {
@@ -172,7 +241,11 @@
       sellerPlan: sellerPlan,
       role: sellerActive ? 'comprador-vendedor' : 'comprador',
       createdAt: account.createdAt || new Date().toISOString(),
-      sellerActivatedAt: account.sellerActivatedAt || ''
+      sellerActivatedAt: account.sellerActivatedAt || '',
+      passwordSalt: account.passwordSalt || '',
+      passwordHash: account.passwordHash || '',
+      authProvider: account.authProvider || 'local-prototype',
+      authPreparedFor: account.authPreparedFor || 'firebase-auth'
     };
   }
 
@@ -193,6 +266,7 @@
     state.account = normalizeAccount(readStorage(storageKeys.account, null));
     state.user = normalizeAccount(readStorage(storageKeys.session, null));
     state.drafts = readStorage(storageKeys.drafts, []);
+    state.legalAccepted = Boolean(readStorage(storageKeys.legalAccepted, false));
   }
 
   function persistAccount(account) {
@@ -226,6 +300,122 @@
     if (type) {
       element.classList.add(type === 'error' ? 'is-error' : 'is-success');
     }
+  }
+
+  function focusQuickAuthPanel() {
+    if (!quickAuthPanel || !quickLoginEmail) {
+      return;
+    }
+
+    quickAuthPanel.scrollIntoView({
+      block: 'nearest',
+      behavior: 'smooth'
+    });
+
+    window.setTimeout(function () {
+      quickLoginEmail.focus();
+    }, 50);
+  }
+
+  function promptQuickAuth(message, pendingAction) {
+    state.pendingAction = pendingAction || null;
+    setAuthMode('login');
+    setStatus(quickAuthStatus, message, 'error');
+    setStatus(authStatus, message, 'error');
+    focusQuickAuthPanel();
+  }
+
+  function clearPendingAction() {
+    state.pendingAction = null;
+  }
+
+  function performPendingAction() {
+    if (!state.pendingAction) {
+      return;
+    }
+
+    if (state.pendingAction.type === 'contact' && state.pendingAction.href) {
+      window.open(state.pendingAction.href, '_blank', 'noopener,noreferrer');
+      clearPendingAction();
+      return;
+    }
+
+    if (state.pendingAction.type === 'route' && state.pendingAction.route) {
+      var nextRoute = state.pendingAction.route;
+      clearPendingAction();
+      goTo(nextRoute);
+      return;
+    }
+
+    clearPendingAction();
+  }
+
+  function logoutCurrentUser(message) {
+    window.localStorage.removeItem(storageKeys.session);
+    state.user = null;
+    clearPendingAction();
+    setAuthMode('login');
+    setStatus(authStatus, message || 'Sessao encerrada. Voce pode entrar novamente quando quiser.', '');
+    setStatus(quickAuthStatus, message || 'Sessao encerrada. Voce pode entrar novamente quando quiser.', '');
+    renderInterface();
+  }
+
+  async function loginWithLocalCredentials(email, password) {
+    var savedAccount = readStorage(storageKeys.account, null);
+    var normalizedEmail = email.trim().toLowerCase();
+    var passwordValue = password.trim();
+    var passwordMatches = false;
+
+    if (!savedAccount) {
+      return {
+        ok: false,
+        message: 'Nenhuma conta local encontrada. Crie sua conta primeiro.'
+      };
+    }
+
+    if ((savedAccount.email || '').trim().toLowerCase() !== normalizedEmail) {
+      return {
+        ok: false,
+        message: 'Esse e-mail nao corresponde a conta salva localmente.'
+      };
+    }
+
+    if (!passwordValue) {
+      return {
+        ok: false,
+        message: 'Digite sua senha para entrar.'
+      };
+    }
+
+    if (!canUseSecureAuth()) {
+      return {
+        ok: false,
+        message: 'Seu navegador nao liberou a base de autenticacao local segura.'
+      };
+    }
+
+    if (!hasLocalPassword(savedAccount)) {
+      return {
+        ok: false,
+        message: 'Sua conta local ainda nao tem senha pronta. Recrie a conta para ativar a autenticacao local.'
+      };
+    }
+
+    passwordMatches = await verifyLocalPassword(savedAccount, passwordValue);
+
+    if (!passwordMatches) {
+      return {
+        ok: false,
+        message: 'Senha incorreta para a conta local informada.'
+      };
+    }
+
+    persistSession(savedAccount);
+
+    return {
+      ok: true,
+      message: 'Entrada concluida. Sua conta local foi carregada.'
+    };
   }
 
   function formatDraftCount(count) {
@@ -333,6 +523,32 @@
     renderDraftList();
   }
 
+  function renderQuickAuthPanel() {
+    var isLoggedIn = Boolean(state.user);
+
+    if (quickAuthGuest) {
+      quickAuthGuest.hidden = isLoggedIn;
+    }
+
+    if (quickAuthUser) {
+      quickAuthUser.hidden = !isLoggedIn;
+    }
+
+    document.body.classList.toggle('is-authenticated', isLoggedIn);
+
+    if (!isLoggedIn) {
+      return;
+    }
+
+    if (quickUserName) {
+      quickUserName.textContent = state.user.name;
+    }
+
+    if (quickUserMeta) {
+      quickUserMeta.textContent = state.user.email + ' | pronto para futura integracao com Firebase Authentication';
+    }
+  }
+
   function renderAnnounce() {
     var isLoggedIn = Boolean(state.user);
     var isSeller = isLoggedIn && state.user.sellerActive;
@@ -373,6 +589,32 @@
     adContactMeta.textContent = 'Contato local: ' + state.user.email + ' | ' + state.user.phone;
     populateAdFormFromLatestDraft();
     setStatus(adStatus, 'Seu rascunho pode ser salvo localmente nesta etapa e depois migrado para Firestore.', '');
+  }
+
+  function renderDetailAccess() {
+    var isLoggedIn = Boolean(state.user);
+
+    if (!detailContactButton) {
+      return;
+    }
+
+    detailContactButton.textContent = isLoggedIn ? 'Contato via WhatsApp' : 'Entrar para falar com o vendedor';
+    setStatus(
+      detailContactStatus,
+      isLoggedIn
+        ? 'Contato liberado para a sua conta local. Fluxo pronto para migrar depois para Firebase Auth.'
+        : 'Entre para liberar o contato com o vendedor.',
+      isLoggedIn ? 'success' : ''
+    );
+  }
+
+  function renderLegalBanner() {
+    if (!legalBanner) {
+      return;
+    }
+
+    legalBanner.hidden = state.legalAccepted;
+    document.body.classList.toggle('has-legal-banner', !state.legalAccepted);
   }
 
   function renderPlans() {
@@ -504,7 +746,10 @@
   function renderInterface() {
     renderCatalog();
     renderProfile();
+    renderQuickAuthPanel();
     renderAnnounce();
+    renderDetailAccess();
+    renderLegalBanner();
     renderPlans();
   }
 
@@ -534,6 +779,14 @@
   }
 
   function goTo(route) {
+    if (normalizeRoute(route) === 'anunciar' && !state.user) {
+      promptQuickAuth('Entre para anunciar seus produtos.', {
+        type: 'route',
+        route: 'anunciar'
+      });
+      return;
+    }
+
     updateView(route);
     syncHash(route);
   }
@@ -601,32 +854,38 @@
 
   function bindAuthForms() {
     if (loginForm) {
-      loginForm.addEventListener('submit', function (event) {
+      loginForm.addEventListener('submit', async function (event) {
         event.preventDefault();
 
-        var email = document.getElementById('login-email').value.trim().toLowerCase();
-        var savedAccount = readStorage(storageKeys.account, null);
+        var loginResult = await loginWithLocalCredentials(
+          document.getElementById('login-email').value,
+          loginPassword ? loginPassword.value : ''
+        );
 
-        if (!savedAccount) {
-          setStatus(authStatus, 'Nenhuma conta local encontrada. Crie sua conta primeiro.', 'error');
-          setAuthMode('register');
+        setStatus(authStatus, loginResult.message, loginResult.ok ? 'success' : 'error');
+        setStatus(quickAuthStatus, loginResult.message, loginResult.ok ? 'success' : 'error');
+
+        if (!loginResult.ok) {
+          if (loginResult.message.indexOf('Crie sua conta') !== -1) {
+            setAuthMode('register');
+          }
           return;
         }
 
-        if (savedAccount.email !== email) {
-          setStatus(authStatus, 'Esse e-mail nao corresponde a conta salva localmente.', 'error');
-          return;
-        }
-
-        persistSession(savedAccount);
-        setStatus(authStatus, 'Entrada concluida. Sua conta local foi carregada.', 'success');
         renderInterface();
+        performPendingAction();
       });
     }
 
     if (registerForm) {
-      registerForm.addEventListener('submit', function (event) {
+      registerForm.addEventListener('submit', async function (event) {
+        var credentials;
         event.preventDefault();
+
+        if (!canUseSecureAuth()) {
+          setStatus(authStatus, 'Seu navegador nao liberou a base local segura para criar senha.', 'error');
+          return;
+        }
 
         var account = {
           name: document.getElementById('register-name').value.trim(),
@@ -637,15 +896,30 @@
           createdAt: new Date().toISOString()
         };
 
-        if (!account.name || !account.email || !account.phone) {
-          setStatus(authStatus, 'Preencha nome, e-mail e telefone para criar sua conta.', 'error');
+        if (!account.name || !account.email || !account.phone || !registerPassword || !registerPassword.value.trim()) {
+          setStatus(authStatus, 'Preencha nome, e-mail, telefone e senha para criar sua conta.', 'error');
           return;
         }
 
-        syncAccount(account);
-        setStatus(authStatus, 'Conta criada com sucesso. Voce ja pode montar seu anuncio.', 'success');
+        credentials = await buildLocalCredentials(registerPassword.value.trim());
+        syncAccount({
+          name: account.name,
+          email: account.email,
+          phone: account.phone,
+          sellerActive: account.sellerActive,
+          sellerPlan: account.sellerPlan,
+          createdAt: account.createdAt,
+          passwordSalt: credentials.passwordSalt,
+          passwordHash: credentials.passwordHash,
+          authProvider: credentials.authProvider,
+          authPreparedFor: credentials.authPreparedFor
+        });
+
+        setStatus(authStatus, 'Conta criada com sucesso. Sua senha local foi preparada sem salvar texto puro.', 'success');
+        setStatus(quickAuthStatus, 'Conta criada com sucesso. Sua senha local foi preparada para o acesso rapido.', 'success');
         renderInterface();
         goTo('perfil');
+        performPendingAction();
       });
     }
   }
@@ -656,11 +930,58 @@
     }
 
     logoutButton.addEventListener('click', function () {
-      window.localStorage.removeItem(storageKeys.session);
-      state.user = null;
-      setAuthMode('login');
-      setStatus(authStatus, 'Sessao encerrada. Voce pode entrar novamente quando quiser.', '');
-      renderInterface();
+      logoutCurrentUser('Sessao encerrada. Voce pode entrar novamente quando quiser.');
+    });
+  }
+
+  function bindQuickAuthPanel() {
+    if (quickLoginForm) {
+      quickLoginForm.addEventListener('submit', async function (event) {
+        var loginResult;
+        event.preventDefault();
+
+        loginResult = await loginWithLocalCredentials(
+          quickLoginEmail ? quickLoginEmail.value : '',
+          quickLoginPassword ? quickLoginPassword.value : ''
+        );
+
+        setStatus(quickAuthStatus, loginResult.message, loginResult.ok ? 'success' : 'error');
+        setStatus(authStatus, loginResult.message, loginResult.ok ? 'success' : 'error');
+
+        if (!loginResult.ok) {
+          return;
+        }
+
+        renderInterface();
+        performPendingAction();
+      });
+    }
+
+    if (quickForgotPassword) {
+      quickForgotPassword.addEventListener('click', function () {
+        var forgotMessage = 'Recuperacao de senha entra na futura integracao com Firebase Authentication. Use a tela de perfil para recriar a conta local nesta etapa.';
+        setStatus(quickAuthStatus, forgotMessage, '');
+        setStatus(authStatus, forgotMessage, '');
+        goTo('perfil');
+      });
+    }
+
+    if (quickLogoutButton) {
+      quickLogoutButton.addEventListener('click', function () {
+        logoutCurrentUser('Sessao encerrada no acesso rapido.');
+      });
+    }
+  }
+
+  function bindLegalBanner() {
+    if (!acceptLegalButton) {
+      return;
+    }
+
+    acceptLegalButton.addEventListener('click', function () {
+      state.legalAccepted = true;
+      writeStorage(storageKeys.legalAccepted, true);
+      renderLegalBanner();
     });
   }
 
@@ -737,6 +1058,23 @@
     }
   }
 
+  function bindProtectedActions() {
+    if (detailContactButton) {
+      detailContactButton.addEventListener('click', function () {
+        if (!state.user) {
+          promptQuickAuth('Entre para liberar o contato com o vendedor.', {
+            type: 'contact',
+            href: detailContactButton.dataset.contactHref
+          });
+          renderDetailAccess();
+          return;
+        }
+
+        window.open(detailContactButton.dataset.contactHref, '_blank', 'noopener,noreferrer');
+      });
+    }
+  }
+
   function bindBrowserNavigation() {
     window.addEventListener('hashchange', function () {
       updateView(window.location.hash.replace('#', ''));
@@ -771,8 +1109,11 @@
     bindAuthSwitch();
     bindAuthForms();
     bindProfileActions();
+    bindQuickAuthPanel();
     bindPlanButtons();
     bindAdForm();
+    bindProtectedActions();
+    bindLegalBanner();
     bindBrowserNavigation();
     registerServiceWorker();
     showFirebaseStatus();
