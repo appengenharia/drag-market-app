@@ -13,7 +13,18 @@
     account: 'marketCarAccount',
     session: 'marketCarSession',
     drafts: 'marketCarDrafts',
-    legalAccepted: 'accepted_terms'
+    legalAccepted: 'accepted_terms',
+    adminOverride: 'marketCarAdminOverride'
+  };
+
+  // TODO(V02+): substituir DEFAULT_ADMIN/marketCarAdminOverride por Firebase Auth
+  // com o usuario admin criado no Auth e o campo isAdmin: true na colecao users do Firestore.
+  var DEFAULT_ADMIN = {
+    email: 'admim@admim',
+    password: 'admim',
+    name: 'Administrador',
+    isAdmin: true,
+    createdAt: 'built-in'
   };
 
   var state = {
@@ -26,7 +37,8 @@
     drafts: [],
     legalAccepted: false,
     pendingAction: null,
-    authPanelOpen: false
+    authPanelOpen: false,
+    adminOverride: null
   };
 
   var viewCards = document.querySelectorAll('[data-view]');
@@ -100,6 +112,14 @@
   var quickLogoutButton = document.getElementById('quick-logout-button');
   var legalBanner = document.getElementById('legal-banner');
   var acceptLegalButton = document.getElementById('accept-legal-button');
+  var adminPanel = document.getElementById('admin-panel');
+  var adminDefaultWarning = document.getElementById('admin-default-warning');
+  var adminSettingsForm = document.getElementById('admin-settings-form');
+  var adminDisplayName = document.getElementById('admin-display-name');
+  var adminNewPassword = document.getElementById('admin-new-password');
+  var adminConfirmPassword = document.getElementById('admin-confirm-password');
+  var adminSettingsStatus = document.getElementById('admin-settings-status');
+  var adminResetButton = document.getElementById('admin-reset-button');
 
   function normalizeRoute(route) {
     return Object.prototype.hasOwnProperty.call(routes, route) ? route : 'home';
@@ -119,6 +139,54 @@
       .replace(/[\u0300-\u036f]/g, '')
       .trim()
       .toLowerCase();
+  }
+
+  function normalizeAdminOverride(override) {
+    if (!override || typeof override !== 'object') {
+      return null;
+    }
+
+    if (!override.name || !override.password) {
+      return null;
+    }
+
+    return {
+      name: String(override.name).trim(),
+      password: String(override.password),
+      changedAt: override.changedAt || ''
+    };
+  }
+
+  function getAdminCredentials() {
+    var override = normalizeAdminOverride(state.adminOverride);
+
+    return {
+      email: DEFAULT_ADMIN.email,
+      password: override ? override.password : DEFAULT_ADMIN.password,
+      name: override ? override.name : DEFAULT_ADMIN.name,
+      isAdmin: true,
+      createdAt: DEFAULT_ADMIN.createdAt,
+      changedAt: override ? override.changedAt : ''
+    };
+  }
+
+  function isDefaultAdminCredentials() {
+    return !normalizeAdminOverride(state.adminOverride);
+  }
+
+  function buildAdminSessionUser() {
+    var adminCredentials = getAdminCredentials();
+
+    return normalizeAccount({
+      name: adminCredentials.name,
+      email: adminCredentials.email,
+      phone: 'Painel ADM',
+      sellerActive: false,
+      sellerPlan: '',
+      isAdmin: true,
+      role: 'admin',
+      createdAt: adminCredentials.createdAt
+    });
   }
 
   function canUseSecureAuth() {
@@ -235,6 +303,7 @@
       return null;
     }
 
+    var isAdmin = Boolean(account.isAdmin);
     var sellerActive = Boolean(account.sellerActive || account.sellerPlan);
     var sellerPlan = sellerActive ? account.sellerPlan || 'mensal' : '';
 
@@ -242,9 +311,10 @@
       name: account.name || '',
       email: (account.email || '').trim().toLowerCase(),
       phone: account.phone || '',
+      isAdmin: isAdmin,
       sellerActive: sellerActive,
       sellerPlan: sellerPlan,
-      role: sellerActive ? 'comprador-vendedor' : 'comprador',
+      role: isAdmin ? 'admin' : sellerActive ? 'comprador-vendedor' : 'comprador',
       createdAt: account.createdAt || new Date().toISOString(),
       sellerActivatedAt: account.sellerActivatedAt || '',
       passwordSalt: account.passwordSalt || '',
@@ -299,10 +369,15 @@
   }
 
   function loadState() {
+    state.adminOverride = normalizeAdminOverride(readStorage(storageKeys.adminOverride, null));
     state.account = normalizeAccount(readStorage(storageKeys.account, null));
     state.user = normalizeAccount(readStorage(storageKeys.session, null));
     state.drafts = readStorage(storageKeys.drafts, []);
     state.legalAccepted = readAcceptedTerms();
+
+    if (state.user && state.user.isAdmin) {
+      persistSession(buildAdminSessionUser());
+    }
   }
 
   function persistAccount(account) {
@@ -331,6 +406,7 @@
     }
 
     element.textContent = message;
+    element.dataset.hasMessage = message ? 'true' : '';
     element.classList.remove('is-success', 'is-error');
 
     if (type) {
@@ -394,10 +470,19 @@
   }
 
   async function loginWithLocalCredentials(email, password) {
+    var adminCredentials = getAdminCredentials();
     var savedAccount = readStorage(storageKeys.account, null);
     var normalizedEmail = email.trim().toLowerCase();
     var passwordValue = password.trim();
     var passwordMatches = false;
+
+    if (normalizedEmail === adminCredentials.email && passwordValue === adminCredentials.password) {
+      persistSession(buildAdminSessionUser());
+      return {
+        ok: true,
+        message: 'Entrada ADM concluida. Painel administrativo local liberado.'
+      };
+    }
 
     if (!savedAccount) {
       return {
@@ -542,6 +627,24 @@
     }
 
     if (!isLoggedIn) {
+      if (draftList) {
+        draftList.hidden = false;
+      }
+      return;
+    }
+
+    if (state.user.isAdmin) {
+      profileName.textContent = state.user.name;
+      profileMeta.textContent = state.user.email + ' | acesso administrativo local';
+      profileStatus.textContent = 'Administrador';
+      profileContact.textContent = state.user.email;
+      profilePlan.textContent = 'Painel ADM';
+      profileDrafts.textContent = 'Sem anuncios';
+      activateSellerButton.hidden = true;
+      goAdButton.hidden = true;
+      if (draftList) {
+        draftList.hidden = true;
+      }
       return;
     }
 
@@ -553,7 +656,42 @@
     profileDrafts.textContent = formatDraftCount(state.drafts.length);
     activateSellerButton.hidden = state.user.sellerActive;
     goAdButton.hidden = !state.user.sellerActive;
+    if (draftList) {
+      draftList.hidden = false;
+    }
     renderDraftList();
+  }
+
+  function renderAdminPanel() {
+    var isAdmin = Boolean(state.user && state.user.isAdmin);
+
+    if (adminPanel) {
+      adminPanel.hidden = !isAdmin;
+    }
+
+    if (!isAdmin) {
+      return;
+    }
+
+    if (adminDisplayName) {
+      adminDisplayName.value = getAdminCredentials().name;
+    }
+
+    if (adminDefaultWarning) {
+      adminDefaultWarning.hidden = !isDefaultAdminCredentials();
+    }
+
+    if (adminNewPassword) {
+      adminNewPassword.value = '';
+    }
+
+    if (adminConfirmPassword) {
+      adminConfirmPassword.value = '';
+    }
+
+    if (adminSettingsStatus) {
+      setStatus(adminSettingsStatus, 'Esse mecanismo local e temporario e deve ser substituido por Firebase Auth nas proximas versoes.', '');
+    }
   }
 
   function renderQuickAuthPanel() {
@@ -582,7 +720,9 @@
     }
 
     if (quickUserMeta) {
-      quickUserMeta.textContent = state.user.email + ' | pronto para futura integracao com Firebase Authentication';
+      quickUserMeta.textContent = state.user.isAdmin
+        ? state.user.email + ' | administrador local de teste'
+        : state.user.email + ' | pronto para futura integracao com Firebase Authentication';
     }
   }
 
@@ -784,6 +924,7 @@
   function renderInterface() {
     renderCatalog();
     renderProfile();
+    renderAdminPanel();
     renderQuickAuthPanel();
     renderAnnounce();
     renderDetailAccess();
@@ -1106,6 +1247,69 @@
     });
   }
 
+  function bindAdminPanel() {
+    if (adminSettingsForm) {
+      adminSettingsForm.addEventListener('submit', function (event) {
+        var nextName;
+        var nextPassword;
+        var confirmPassword;
+        var overridePayload;
+
+        event.preventDefault();
+
+        if (!state.user || !state.user.isAdmin) {
+          setStatus(adminSettingsStatus, 'Entre com a conta ADM para alterar essas configuracoes.', 'error');
+          return;
+        }
+
+        nextName = adminDisplayName ? adminDisplayName.value.trim() : '';
+        nextPassword = adminNewPassword ? adminNewPassword.value : '';
+        confirmPassword = adminConfirmPassword ? adminConfirmPassword.value : '';
+
+        if (!nextName || !nextPassword || !confirmPassword) {
+          setStatus(adminSettingsStatus, 'Preencha nome, nova senha e confirmacao para salvar.', 'error');
+          return;
+        }
+
+        if (nextPassword !== confirmPassword) {
+          setStatus(adminSettingsStatus, 'A nova senha e a confirmacao precisam ser identicas.', 'error');
+          return;
+        }
+
+        overridePayload = {
+          name: nextName,
+          password: nextPassword,
+          changedAt: new Date().toISOString()
+        };
+
+        state.adminOverride = normalizeAdminOverride(overridePayload);
+        writeStorage(storageKeys.adminOverride, overridePayload);
+        persistSession(buildAdminSessionUser());
+        renderInterface();
+        setStatus(adminSettingsStatus, 'Credenciais ADM atualizadas localmente para a fase de testes.', 'success');
+      });
+    }
+
+    if (adminResetButton) {
+      adminResetButton.addEventListener('click', function () {
+        if (!state.user || !state.user.isAdmin) {
+          setStatus(adminSettingsStatus, 'Entre com a conta ADM para restaurar as credenciais padrao.', 'error');
+          return;
+        }
+
+        if (!window.confirm('Deseja restaurar as credenciais padrao do administrador de teste?')) {
+          return;
+        }
+
+        window.localStorage.removeItem(storageKeys.adminOverride);
+        state.adminOverride = null;
+        persistSession(buildAdminSessionUser());
+        renderInterface();
+        setStatus(adminSettingsStatus, 'Credenciais padrao do administrador restauradas.', 'success');
+      });
+    }
+  }
+
   function bindPlanButtons() {
     planButtons.forEach(function (button) {
       button.addEventListener('click', function () {
@@ -1235,6 +1439,7 @@
     bindAdForm();
     bindProtectedActions();
     bindLegalBanner();
+    bindAdminPanel();
     bindBrowserNavigation();
     registerServiceWorker();
     showFirebaseStatus();

@@ -479,6 +479,45 @@
                 </div>
 
                 <div class="draft-list" id="draft-list"></div>
+
+                <section class="info-card admin-panel" id="admin-panel" hidden>
+                  <p class="section-label">Painel ADM</p>
+                  <h4>Configuracoes da conta ADM</h4>
+                  <p class="panel-copy">
+                    Ajuste o nome de exibicao e a senha do administrador local de teste antes de publicar o app.
+                  </p>
+
+                  <article class="stat-card admin-warning" id="admin-default-warning" hidden>
+                    <span class="stat-label">Aviso</span>
+                    <strong>
+                      Voce esta usando as credenciais padrao de teste. Recomendamos trocar o nome e a senha antes de publicar o app.
+                    </strong>
+                  </article>
+
+                  <form class="stack-form" id="admin-settings-form">
+                    <label class="input-group">
+                      <span>Novo nome de exibicao</span>
+                      <input type="text" id="admin-display-name" placeholder="Administrador" required />
+                    </label>
+                    <label class="input-group">
+                      <span>Nova senha</span>
+                      <input type="password" id="admin-new-password" placeholder="Nova senha do ADM" required />
+                    </label>
+                    <label class="input-group">
+                      <span>Confirmar nova senha</span>
+                      <input type="password" id="admin-confirm-password" placeholder="Confirme a nova senha" required />
+                    </label>
+
+                    <div class="button-row">
+                      <button class="primary-button" type="submit">Salvar alteracoes</button>
+                      <button class="ghost-button" type="button" id="admin-reset-button">Restaurar credenciais padrao</button>
+                    </div>
+                  </form>
+
+                  <p class="helper-text status-text" id="admin-settings-status">
+                    Esse mecanismo local e temporario e deve ser substituido por Firebase Auth nas proximas versoes.
+                  </p>
+                </section>
               </section>
             </div>
           </section>

@@ -922,6 +922,15 @@ body.has-legal-banner .bottom-nav {
   gap: 14px;
 }
 
+.admin-panel {
+  gap: 14px;
+}
+
+.admin-warning strong {
+  display: block;
+  line-height: 1.5;
+}
+
 .button-row {
   grid-template-columns: 1fr;
 }
