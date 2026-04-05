@@ -725,12 +725,19 @@ body.has-legal-banner .bottom-nav {
 }
 
 .quick-auth-panel,
-.legal-banner {
+.legal-banner,
+.quick-auth-backdrop {
   position: fixed;
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   background: linear-gradient(180deg, rgba(25, 26, 30, 0.94) 0%, rgba(14, 15, 17, 0.94) 100%);
   backdrop-filter: blur(16px);
+}
+
+.quick-auth-mobile-trigger,
+.quick-auth-backdrop,
+.quick-auth-close {
+  display: none;
 }
 
 .quick-auth-panel {
@@ -746,8 +753,6 @@ body.has-legal-banner .bottom-nav {
   z-index: 28;
 }
 
-.quick-auth-panel:hover,
-.quick-auth-panel:focus-within,
 .quick-auth-panel.is-open {
   transform: translateX(0);
 }
@@ -767,6 +772,18 @@ body.has-legal-banner .bottom-nav {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.quick-auth-close {
+  justify-self: end;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--metal);
+  border: 1px solid var(--line);
+  font-size: 0.76rem;
+  font-weight: 700;
 }
 
 .quick-auth-panel h3,
@@ -810,6 +827,13 @@ body.has-legal-banner .bottom-nav {
 .legal-copy {
   color: var(--text-soft);
   line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  .quick-auth-panel:hover,
+  .quick-auth-panel:focus-within {
+    transform: translateX(0);
+  }
 }
 
 .status-text.is-success {
@@ -1366,5 +1390,111 @@ body.has-legal-banner .bottom-nav {
   .legal-banner {
     left: 24px;
     right: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  body.auth-panel-open {
+    overflow: hidden;
+  }
+
+  body.has-legal-banner .app-shell {
+    padding-bottom: 158px;
+  }
+
+  body:not(.has-legal-banner) .app-shell {
+    padding-bottom: 112px;
+  }
+
+  .quick-auth-mobile-trigger {
+    position: fixed;
+    left: 12px;
+    bottom: 78px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(209, 21, 26, 0.94), rgba(120, 11, 14, 0.92));
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 800;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.32);
+    z-index: 27;
+  }
+
+  body.has-legal-banner .quick-auth-mobile-trigger {
+    bottom: 130px;
+  }
+
+  .quick-auth-backdrop {
+    inset: 0;
+    display: block;
+    border: 0;
+    box-shadow: none;
+    background: rgba(0, 0, 0, 0.48);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.24s ease;
+    z-index: 27;
+  }
+
+  body.auth-panel-open .quick-auth-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .quick-auth-panel {
+    top: auto;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-height: min(72vh, 540px);
+    padding: 16px 16px 18px;
+    overflow-y: auto;
+    border-radius: 24px;
+    transform: translateY(calc(100% + 24px));
+    transition: transform 0.28s ease, opacity 0.28s ease;
+    bottom: 74px;
+    z-index: 28;
+  }
+
+  body.has-legal-banner .quick-auth-panel {
+    bottom: 126px;
+  }
+
+  .quick-auth-panel.is-open {
+    transform: translateY(0);
+  }
+
+  .quick-auth-handle {
+    display: none;
+  }
+
+  .quick-auth-close {
+    display: inline-flex;
+  }
+
+  .legal-banner {
+    left: 10px;
+    right: 10px;
+    bottom: 8px;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 18px;
+  }
+
+  .legal-copy {
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  .legal-banner .primary-button {
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 0.78rem;
   }
 }

@@ -85,6 +85,9 @@
   var catalogMatchList = document.getElementById('catalog-match-list');
   var quickAuthPanel = document.getElementById('quick-auth-panel');
   var quickAuthHandle = document.getElementById('quick-auth-handle');
+  var quickAuthMobileTrigger = document.getElementById('quick-auth-mobile-trigger');
+  var quickAuthBackdrop = document.getElementById('quick-auth-backdrop');
+  var quickAuthClose = document.getElementById('quick-auth-close');
   var quickAuthGuest = document.getElementById('quick-auth-guest');
   var quickAuthUser = document.getElementById('quick-auth-user');
   var quickLoginForm = document.getElementById('quick-login-form');
@@ -275,6 +278,10 @@
     return isAcceptedValue(currentValue) || isAcceptedValue(legacyValue);
   }
 
+  function isMobileViewport() {
+    return window.matchMedia('(max-width: 767px)').matches;
+  }
+
   function setAuthPanelOpen(isOpen) {
     state.authPanelOpen = Boolean(isOpen);
 
@@ -285,6 +292,10 @@
     quickAuthPanel.classList.toggle('is-open', state.authPanelOpen);
     quickAuthPanel.setAttribute('aria-expanded', state.authPanelOpen ? 'true' : 'false');
     document.body.classList.toggle('auth-panel-open', state.authPanelOpen);
+
+    if (quickAuthBackdrop) {
+      quickAuthBackdrop.setAttribute('aria-hidden', state.authPanelOpen ? 'false' : 'true');
+    }
   }
 
   function loadState() {
@@ -557,6 +568,10 @@
     }
 
     document.body.classList.toggle('is-authenticated', isLoggedIn);
+
+    if (quickAuthMobileTrigger) {
+      quickAuthMobileTrigger.textContent = isLoggedIn ? 'Conta' : 'Entrar';
+    }
 
     if (!isLoggedIn) {
       return;
@@ -901,6 +916,10 @@
           return;
         }
 
+        if (isMobileViewport()) {
+          setAuthPanelOpen(false);
+        }
+
         renderInterface();
         performPendingAction();
       });
@@ -946,6 +965,9 @@
 
         setStatus(authStatus, 'Conta criada com sucesso. Sua senha local foi preparada sem salvar texto puro.', 'success');
         setStatus(quickAuthStatus, 'Conta criada com sucesso. Sua senha local foi preparada para o acesso rapido.', 'success');
+        if (isMobileViewport()) {
+          setAuthPanelOpen(false);
+        }
         renderInterface();
         goTo('perfil');
         performPendingAction();
@@ -977,6 +999,31 @@
       });
     }
 
+    if (quickAuthMobileTrigger) {
+      quickAuthMobileTrigger.addEventListener('click', function (event) {
+        event.stopPropagation();
+        setAuthPanelOpen(true);
+
+        if (!state.user && quickLoginEmail) {
+          window.setTimeout(function () {
+            quickLoginEmail.focus();
+          }, 50);
+        }
+      });
+    }
+
+    if (quickAuthClose) {
+      quickAuthClose.addEventListener('click', function () {
+        setAuthPanelOpen(false);
+      });
+    }
+
+    if (quickAuthBackdrop) {
+      quickAuthBackdrop.addEventListener('click', function () {
+        setAuthPanelOpen(false);
+      });
+    }
+
     if (quickLoginForm) {
       quickLoginForm.addEventListener('submit', async function (event) {
         var loginResult;
@@ -992,6 +1039,10 @@
 
         if (!loginResult.ok) {
           return;
+        }
+
+        if (isMobileViewport()) {
+          setAuthPanelOpen(false);
         }
 
         renderInterface();
@@ -1031,6 +1082,12 @@
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && state.authPanelOpen) {
         setAuthPanelOpen(false);
+      }
+    });
+
+    window.addEventListener('resize', function () {
+      if (!isMobileViewport() && quickAuthBackdrop) {
+        quickAuthBackdrop.setAttribute('aria-hidden', 'true');
       }
     });
   }
