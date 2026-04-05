@@ -121,14 +121,161 @@
         </section>
 
         <section class="view-card" data-view="categorias">
-          <section class="panel-screen">
-            <p class="section-label">Categorias</p>
-            <h3>Explore por estilo de preparacao</h3>
-            <div class="panel-grid">
-              <article class="panel-card">Turbo e aspirado</article>
-              <article class="panel-card">Freio e suspensao</article>
-              <article class="panel-card">Interior vintage</article>
-              <article class="panel-card">Projetos completos</article>
+          <section class="panel-screen panel-screen-wide catalog-shell">
+            <div class="catalog-layout">
+              <aside class="catalog-sidebar" aria-label="Menu de categorias">
+                <div>
+                  <p class="section-label">Categorias</p>
+                  <h3>Catalogo de anuncios</h3>
+                  <p class="panel-copy">
+                    Navegue por pecas, conjuntos de performance e projetos de carros antigos em um layout mais direto.
+                  </p>
+                </div>
+
+                <div class="catalog-menu">
+                  <button class="catalog-link is-active" type="button">Turbos</button>
+                  <button class="catalog-link" type="button">Motores</button>
+                  <button class="catalog-link" type="button">Suspensao</button>
+                  <button class="catalog-link" type="button">Classicos</button>
+                  <button class="catalog-link" type="button">Freios</button>
+                  <button class="catalog-link" type="button">Cambio</button>
+                </div>
+
+                <article class="catalog-note">
+                  <p class="section-label">Busca rapida</p>
+                  <p class="panel-copy">
+                    Selecione uma categoria e explore anuncios com visual de marketplace automotivo, sem perder a leitura simples.
+                  </p>
+                </article>
+              </aside>
+
+              <div class="catalog-main">
+                <header class="catalog-header">
+                  <div>
+                    <p class="section-label">Anuncios</p>
+                    <h3>Pecas e projetos em destaque</h3>
+                  </div>
+                  <p class="panel-copy">
+                    Grade pensada para comparar imagem, preco e resumo do produto rapidamente.
+                  </p>
+                </header>
+
+                <div class="catalog-grid">
+                  <article class="listing-card catalog-card" data-route="detalhe">
+                    <div class="listing-image catalog-image image-engine">
+                      <span class="listing-image-tag">Verificado</span>
+                    </div>
+                    <div class="listing-body catalog-body">
+                      <p class="listing-meta">Turbos</p>
+                      <h4>Kit turbina master com coletor AP</h4>
+                      <p class="catalog-summary">Conjunto pronto para projeto de rua e pista, com preparacao inicial ja alinhada.</p>
+                      <div class="catalog-meta">
+                        <span>Campinas, SP</span>
+                        <span>Peça completa</span>
+                      </div>
+                      <div class="listing-footer">
+                        <strong class="price-tag">R$ 6.900</strong>
+                        <span class="listing-badge">Top</span>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="listing-card catalog-card" data-route="detalhe">
+                    <div class="listing-image catalog-image image-wheel">
+                      <span class="listing-image-tag">Classico</span>
+                    </div>
+                    <div class="listing-body catalog-body">
+                      <p class="listing-meta">Classicos</p>
+                      <h4>Jogo de rodas vintage tala larga</h4>
+                      <p class="catalog-summary">Visual period correct para projetos antigos com acabamento marcante e perfil esportivo.</p>
+                      <div class="catalog-meta">
+                        <span>Curitiba, PR</span>
+                        <span>Aro 15</span>
+                      </div>
+                      <div class="listing-footer">
+                        <strong class="price-tag">R$ 4.200</strong>
+                        <span class="listing-badge">Destaque</span>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="listing-card catalog-card" data-route="detalhe">
+                    <div class="listing-image catalog-image image-classic">
+                      <span class="listing-image-tag">Projeto</span>
+                    </div>
+                    <div class="listing-body catalog-body">
+                      <p class="listing-meta">Carros antigos</p>
+                      <h4>Caravan de pista para acerto final</h4>
+                      <p class="catalog-summary">Projeto com base pronta para quem procura um carro antigo com pegada de arrancada.</p>
+                      <div class="catalog-meta">
+                        <span>Belo Horizonte, MG</span>
+                        <span>6 cilindros</span>
+                      </div>
+                      <div class="listing-footer">
+                        <strong class="price-tag">R$ 74.900</strong>
+                        <span class="listing-badge">Projeto</span>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="listing-card catalog-card" data-route="detalhe">
+                    <div class="listing-image catalog-image image-engine">
+                      <span class="listing-image-tag">Motor</span>
+                    </div>
+                    <div class="listing-body catalog-body">
+                      <p class="listing-meta">Motores</p>
+                      <h4>AP forjado para turbo street</h4>
+                      <p class="catalog-summary">Motor montado para quem quer resposta forte e base confiavel para preparacao.</p>
+                      <div class="catalog-meta">
+                        <span>Goiania, GO</span>
+                        <span>Montado</span>
+                      </div>
+                      <div class="listing-footer">
+                        <strong class="price-tag">R$ 18.500</strong>
+                        <span class="listing-badge">Motor</span>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="listing-card catalog-card" data-route="detalhe">
+                    <div class="listing-image catalog-image image-wheel">
+                      <span class="listing-image-tag">Setup</span>
+                    </div>
+                    <div class="listing-body catalog-body">
+                      <p class="listing-meta">Suspensao</p>
+                      <h4>Kit coilover ajustavel dianteiro</h4>
+                      <p class="catalog-summary">Acerto mais firme para uso esportivo, com visual limpo e proposta de pista.</p>
+                      <div class="catalog-meta">
+                        <span>Porto Alegre, RS</span>
+                        <span>Performance</span>
+                      </div>
+                      <div class="listing-footer">
+                        <strong class="price-tag">R$ 3.850</strong>
+                        <span class="listing-badge">Setup</span>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="listing-card catalog-card" data-route="detalhe">
+                    <div class="listing-image catalog-image image-classic">
+                      <span class="listing-image-tag">Cambio</span>
+                    </div>
+                    <div class="listing-body catalog-body">
+                      <p class="listing-meta">Cambio</p>
+                      <h4>Caixa preparada para projeto V8</h4>
+                      <p class="catalog-summary">Conjunto visualmente alinhado com projetos antigos e uso de alta carga.</p>
+                      <div class="catalog-meta">
+                        <span>Ribeirao Preto, SP</span>
+                        <span>Preparado</span>
+                      </div>
+                      <div class="listing-footer">
+                        <strong class="price-tag">R$ 7.300</strong>
+                        <span class="listing-badge">V8</span>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </div>
             </div>
           </section>
         </section>
