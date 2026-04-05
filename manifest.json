@@ -1,7 +1,7 @@
-{
-  "name": "market_car",
-  "short_name": "MC",
-  "description": "Marketplace de nicho para pe�as de arrancada e carros antigos.",
+﻿{
+  "name": "Red Line Peças e Acessórios Automotivos",
+  "short_name": "Red Line",
+  "description": "Red Line Peças e Acessórios Automotivos para arrancada, performance e carros antigos.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#111111",

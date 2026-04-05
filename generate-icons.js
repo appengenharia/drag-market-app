@@ -13,6 +13,7 @@ try {
 const rootDir = __dirname;
 const sourcePath = path.join(rootDir, 'logo.svg');
 const iconSizes = [48, 72, 96, 192, 512];
+const sourceSvg = fs.readFileSync(sourcePath);
 
 if (!fs.existsSync(sourcePath)) {
   console.error('Arquivo logo.svg nao encontrado em: ' + sourcePath);
@@ -22,7 +23,7 @@ if (!fs.existsSync(sourcePath)) {
 async function generateIcon(size) {
   const outputPath = path.join(rootDir, 'icon-' + size + '.png');
 
-  await sharp(sourcePath)
+  await sharp(sourceSvg, { density: 384 })
     .resize(size, size, {
       fit: 'contain',
       background: { r: 17, g: 17, b: 17, alpha: 1 }
@@ -34,7 +35,9 @@ async function generateIcon(size) {
 }
 
 async function start() {
-  await Promise.all(iconSizes.map(generateIcon));
+  for (const size of iconSizes) {
+    await generateIcon(size);
+  }
   console.log('Todos os icones PNG foram gerados a partir de logo.svg.');
 }
 

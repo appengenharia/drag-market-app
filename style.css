@@ -131,15 +131,29 @@ button {
 }
 
 .hero-brand {
-  gap: 12px;
+  gap: 16px;
+  align-items: center;
+}
+
+.hero-brand-copy {
+  display: grid;
+  gap: 4px;
 }
 
 .app-logo {
-  height: 36px;
+  height: 88px;
   width: auto;
   object-fit: contain;
   display: block;
   flex: 0 0 auto;
+}
+
+.brand-subtitle {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .hero-actions {
@@ -1456,7 +1470,15 @@ body.has-legal-banner .bottom-nav {
 
 @media (max-width: 767px) {
   .app-logo {
-    height: 28px;
+    height: 64px;
+  }
+
+  .hero-brand {
+    gap: 12px;
+  }
+
+  .brand-subtitle {
+    font-size: 0.82rem;
   }
 
   .update-banner {
