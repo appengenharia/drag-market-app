@@ -17,6 +17,7 @@
 
   var state = {
     currentRoute: 'home',
+    currentCategory: 'Todos',
     authMode: 'login',
     account: null,
     user: null,
@@ -64,9 +65,35 @@
   var adPrice = document.getElementById('ad-price');
   var adLocation = document.getElementById('ad-location');
   var adDescription = document.getElementById('ad-description');
+  var categoryPills = document.querySelectorAll('.category-pill[data-category]');
+  var catalogLinks = document.querySelectorAll('.catalog-link[data-category]');
+  var catalogCards = document.querySelectorAll('.catalog-card[data-category]');
+  var catalogTitle = document.getElementById('catalog-title');
+  var catalogDescription = document.getElementById('catalog-description');
 
   function normalizeRoute(route) {
     return Object.prototype.hasOwnProperty.call(routes, route) ? route : 'home';
+  }
+
+  function normalizeCategory(category) {
+    if (!category) {
+      return 'todos';
+    }
+
+    return String(category).trim().toLowerCase();
+  }
+
+  function getCategoryLabel(category) {
+    var normalizedCategory = normalizeCategory(category);
+    var categorySource = Array.prototype.slice.call(catalogLinks).find(function (button) {
+      return normalizeCategory(button.dataset.category) === normalizedCategory;
+    });
+
+    return categorySource ? categorySource.textContent.trim() : 'Todos';
+  }
+
+  function setCurrentCategory(category) {
+    state.currentCategory = getCategoryLabel(category);
   }
 
   function normalizeAccount(account) {
@@ -319,7 +346,48 @@
     setStatus(sellerPlanStatus, 'Escolha um plano para ativar localmente o modo vendedor. Sem pagamento real nesta etapa.', '');
   }
 
+  function renderCatalog() {
+    var activeCategory = normalizeCategory(state.currentCategory);
+    var visibleCards = 0;
+
+    categoryPills.forEach(function (button) {
+      button.classList.toggle('is-active', normalizeCategory(button.dataset.category) === activeCategory);
+    });
+
+    catalogLinks.forEach(function (button) {
+      var isActive = normalizeCategory(button.dataset.category) === activeCategory;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+
+    catalogCards.forEach(function (card) {
+      var shouldShow = activeCategory === 'todos' || normalizeCategory(card.dataset.category) === activeCategory;
+      card.hidden = !shouldShow;
+
+      if (shouldShow) {
+        visibleCards += 1;
+      }
+    });
+
+    if (catalogTitle) {
+      catalogTitle.textContent = activeCategory === 'todos'
+        ? 'Pecas e projetos em destaque'
+        : getCategoryLabel(state.currentCategory) + ' em destaque';
+    }
+
+    if (catalogDescription) {
+      catalogDescription.textContent = activeCategory === 'todos'
+        ? 'Grade pensada para comparar imagem, preco e resumo do produto rapidamente.'
+        : 'Exibindo anuncios de ' + getCategoryLabel(state.currentCategory).toLowerCase() + ' com leitura rapida de imagem, preco e resumo.';
+    }
+
+    if (!visibleCards && catalogDescription) {
+      catalogDescription.textContent = 'Ainda nao existem anuncios mockados para essa categoria na V01.';
+    }
+  }
+
   function renderInterface() {
+    renderCatalog();
     renderProfile();
     renderAnnounce();
     renderPlans();
@@ -358,30 +426,36 @@
   function bindNavigation() {
     navLinks.forEach(function (button) {
       button.addEventListener('click', function () {
+        if (button.dataset.category) {
+          setCurrentCategory(button.dataset.category);
+        }
+
         goTo(button.dataset.route);
       });
     });
   }
 
   function bindCards() {
-    document.querySelectorAll('.listing-card[data-route], .ghost-link[data-route], .search-bar[data-route], .category-pill[data-route], .primary-button[data-route], .ghost-button[data-route]').forEach(function (item) {
-      item.addEventListener('click', function () {
-        goTo(item.dataset.route);
-      });
-    });
-
     if (promoBanner) {
-      promoBanner.addEventListener('click', function () {
-        goTo(promoBanner.dataset.route);
-      });
-
       promoBanner.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
+          if (promoBanner.dataset.category) {
+            setCurrentCategory(promoBanner.dataset.category);
+          }
           goTo(promoBanner.dataset.route);
         }
       });
     }
+  }
+
+  function bindCategoryFilters() {
+    catalogLinks.forEach(function (button) {
+      button.addEventListener('click', function () {
+        setCurrentCategory(button.dataset.category);
+        renderCatalog();
+      });
+    });
   }
 
   function bindAuthSwitch() {
@@ -566,6 +640,7 @@
     setAuthMode('login');
     bindNavigation();
     bindCards();
+    bindCategoryFilters();
     bindAuthSwitch();
     bindAuthForms();
     bindProfileActions();
