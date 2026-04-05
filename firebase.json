@@ -3,6 +3,11 @@
     "public": ".",
     "ignore": [
       "firebase.json",
+      "package.json",
+      "package-lock.json",
+      "generate-icons.js",
+      "deploy.ps1",
+      "sw.template.js",
       "**/.*",
       "**/node_modules/**"
     ],

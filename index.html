@@ -14,11 +14,16 @@
   </head>
   <body>
     <div class="app-shell">
+      <section class="update-banner" id="update-banner" aria-live="polite" hidden>
+        <p class="update-banner-copy" id="update-message">🔄 Nova versao disponivel</p>
+        <button class="update-banner-action" type="button" id="update-now-button">Atualizar agora</button>
+      </section>
+
       <main class="mobile-app" id="app" aria-live="polite">
         <section class="view-card is-visible" data-view="home">
           <header class="hero-top">
             <div class="hero-brand">
-              <div class="brand-mark" aria-hidden="true">MC</div>
+              <img src="logo.svg" alt="market_car logo" class="app-logo" height="36" />
               <div>
                 <p class="eyebrow">marketplace de nicho</p>
                 <h1>market_car</h1>

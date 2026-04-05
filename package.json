@@ -1,0 +1,10 @@
+{
+  "name": "market-car-tools",
+  "private": true,
+  "scripts": {
+    "generate:icons": "node generate-icons.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

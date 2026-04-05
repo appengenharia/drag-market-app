@@ -1,4 +1,4 @@
-var CACHE_VERSION = 'market-car-v-1775412954';
+var CACHE_VERSION = 'market-car-v-{{BUILD_TIMESTAMP}}';
 var APP_CACHE = CACHE_VERSION;
 var CORE_ASSETS = [
   './',
@@ -173,4 +173,3 @@ self.addEventListener('fetch', function (event) {
 
   event.respondWith(staleWhileRevalidate(request));
 });
-

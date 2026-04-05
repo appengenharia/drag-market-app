@@ -43,6 +43,9 @@
 
   var viewCards = document.querySelectorAll('[data-view]');
   var navLinks = document.querySelectorAll('[data-route]');
+  var updateBanner = document.getElementById('update-banner');
+  var updateMessage = document.getElementById('update-message');
+  var updateNowButton = document.getElementById('update-now-button');
   var promoBanner = document.querySelector('.promo-banner');
   var authTabs = document.querySelectorAll('[data-auth-mode]');
   var authForms = document.querySelectorAll('[data-auth-form]');
@@ -120,6 +123,9 @@
   var adminConfirmPassword = document.getElementById('admin-confirm-password');
   var adminSettingsStatus = document.getElementById('admin-settings-status');
   var adminResetButton = document.getElementById('admin-reset-button');
+  var updateBannerTimer = 0;
+  var activeServiceWorkerRegistration = null;
+  var isReloadingForUpdate = false;
 
   function normalizeRoute(route) {
     return Object.prototype.hasOwnProperty.call(routes, route) ? route : 'home';
@@ -474,9 +480,24 @@
     var savedAccount = readStorage(storageKeys.account, null);
     var normalizedEmail = email.trim().toLowerCase();
     var passwordValue = password.trim();
+    var isAdminAttempt = normalizedEmail === adminCredentials.email;
     var passwordMatches = false;
 
-    if (normalizedEmail === adminCredentials.email && passwordValue === adminCredentials.password) {
+    if (isAdminAttempt) {
+      if (!passwordValue) {
+        return {
+          ok: false,
+          message: 'Digite a senha do administrador para entrar.'
+        };
+      }
+
+      if (passwordValue !== adminCredentials.password) {
+        return {
+          ok: false,
+          message: 'Senha do administrador incorreta. Use a credencial ADM embutida no app.'
+        };
+      }
+
       persistSession(buildAdminSessionUser());
       return {
         ok: true,
@@ -824,6 +845,74 @@
     }
 
     setStatus(sellerPlanStatus, 'Escolha um plano para ativar localmente o modo vendedor. Sem pagamento real nesta etapa.', '');
+  }
+
+  function hideUpdateBanner() {
+    if (!updateBanner) {
+      return;
+    }
+
+    if (updateBannerTimer) {
+      window.clearTimeout(updateBannerTimer);
+      updateBannerTimer = 0;
+    }
+
+    updateBanner.classList.remove('is-visible');
+
+    window.setTimeout(function () {
+      if (!updateBanner.classList.contains('is-visible')) {
+        updateBanner.hidden = true;
+      }
+    }, 260);
+  }
+
+  function showUpdateBanner(message) {
+    if (!updateBanner) {
+      return;
+    }
+
+    if (updateMessage) {
+      updateMessage.textContent = message || '🔄 Nova versao disponivel';
+    }
+
+    if (updateBannerTimer) {
+      window.clearTimeout(updateBannerTimer);
+    }
+
+    updateBanner.hidden = false;
+    window.requestAnimationFrame(function () {
+      updateBanner.classList.add('is-visible');
+    });
+
+    updateBannerTimer = window.setTimeout(function () {
+      hideUpdateBanner();
+    }, 15000);
+  }
+
+  function checkForUpdate(registration) {
+    if (!registration) {
+      return;
+    }
+
+    activeServiceWorkerRegistration = registration;
+
+    if (registration.waiting) {
+      showUpdateBanner('🔄 Nova versao disponivel');
+    }
+
+    registration.addEventListener('updatefound', function () {
+      var installingWorker = registration.installing;
+
+      if (!installingWorker) {
+        return;
+      }
+
+      installingWorker.addEventListener('statechange', function () {
+        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateBanner('🔄 Nova versao disponivel');
+        }
+      });
+    });
   }
 
   function renderCatalog() {
@@ -1247,6 +1336,24 @@
     });
   }
 
+  function bindUpdateBanner() {
+    if (!updateNowButton) {
+      return;
+    }
+
+    updateNowButton.addEventListener('click', function () {
+      if (!activeServiceWorkerRegistration || !activeServiceWorkerRegistration.waiting) {
+        hideUpdateBanner();
+        return;
+      }
+
+      hideUpdateBanner();
+      activeServiceWorkerRegistration.waiting.postMessage({
+        type: 'SKIP_WAITING'
+      });
+    });
+  }
+
   function bindAdminPanel() {
     if (adminSettingsForm) {
       adminSettingsForm.addEventListener('submit', function (event) {
@@ -1412,9 +1519,23 @@
     }
 
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function (error) {
+      navigator.serviceWorker.register('sw.js').then(function (registration) {
+        checkForUpdate(registration);
+        return registration.update().catch(function () {
+          return null;
+        });
+      }).catch(function (error) {
         console.warn('Falha ao registrar o service worker:', error);
       });
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (isReloadingForUpdate) {
+        return;
+      }
+
+      isReloadingForUpdate = true;
+      window.location.reload();
     });
   }
 
@@ -1439,6 +1560,7 @@
     bindAdForm();
     bindProtectedActions();
     bindLegalBanner();
+    bindUpdateBanner();
     bindAdminPanel();
     bindBrowserNavigation();
     registerServiceWorker();
