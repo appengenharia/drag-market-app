@@ -9,13 +9,15 @@
   };
 
   var storageKeys = {
-    user: 'marketCarUser',
+    account: 'marketCarAccount',
+    session: 'marketCarSession',
     drafts: 'marketCarDrafts'
   };
 
   var state = {
     currentRoute: 'home',
     authMode: 'login',
+    account: null,
     user: null,
     drafts: []
   };
@@ -68,13 +70,19 @@
   }
 
   function loadState() {
-    state.user = readStorage(storageKeys.user, null);
+    state.account = readStorage(storageKeys.account, null);
+    state.user = readStorage(storageKeys.session, null);
     state.drafts = readStorage(storageKeys.drafts, []);
   }
 
-  function persistUser(user) {
+  function persistAccount(account) {
+    state.account = account;
+    writeStorage(storageKeys.account, account);
+  }
+
+  function persistSession(user) {
     state.user = user;
-    writeStorage(storageKeys.user, user);
+    writeStorage(storageKeys.session, user);
   }
 
   function persistDrafts(drafts) {
@@ -128,9 +136,6 @@
 
     if (!latestDraft) {
       adForm.reset();
-      if (state.user && adLocation) {
-        adLocation.value = state.user.city || '';
-      }
       return;
     }
 
@@ -185,9 +190,9 @@
     }
 
     profileName.textContent = state.user.name;
-    profileMeta.textContent = state.user.city + ' | ' + state.user.email;
-    profileStatus.textContent = 'Conta pronta para anunciar';
-    profileContact.textContent = state.user.whatsapp;
+    profileMeta.textContent = state.user.email;
+    profileStatus.textContent = 'Logado localmente';
+    profileContact.textContent = state.user.email;
     profileDrafts.textContent = formatDraftCount(state.drafts.length);
     renderDraftList();
   }
@@ -209,7 +214,7 @@
     }
 
     adContactName.textContent = state.user.name;
-    adContactMeta.textContent = state.user.city + ' | WhatsApp: ' + state.user.whatsapp;
+    adContactMeta.textContent = 'Contato local: ' + state.user.email;
     populateAdFormFromLatestDraft();
     setStatus(adStatus, 'Seu rascunho pode ser salvo localmente nesta etapa e depois migrado para Firestore.', '');
   }
@@ -299,21 +304,20 @@
         event.preventDefault();
 
         var email = document.getElementById('login-email').value.trim().toLowerCase();
-        var password = document.getElementById('login-password').value.trim();
-        var savedUser = readStorage(storageKeys.user, null);
+        var savedAccount = readStorage(storageKeys.account, null);
 
-        if (!savedUser) {
+        if (!savedAccount) {
           setStatus(authStatus, 'Nenhuma conta local encontrada. Crie sua conta primeiro.', 'error');
           setAuthMode('register');
           return;
         }
 
-        if (savedUser.email !== email || savedUser.password !== password) {
-          setStatus(authStatus, 'E-mail ou senha nao conferem.', 'error');
+        if (savedAccount.email !== email) {
+          setStatus(authStatus, 'Esse e-mail nao corresponde a conta salva localmente.', 'error');
           return;
         }
 
-        persistUser(savedUser);
+        persistSession(savedAccount);
         setStatus(authStatus, 'Entrada concluida. Seu perfil esta pronto para anunciar.', 'success');
         renderInterface();
       });
@@ -323,21 +327,19 @@
       registerForm.addEventListener('submit', function (event) {
         event.preventDefault();
 
-        var user = {
+        var account = {
           name: document.getElementById('register-name').value.trim(),
-          city: document.getElementById('register-city').value.trim(),
-          whatsapp: document.getElementById('register-whatsapp').value.trim(),
           email: document.getElementById('register-email').value.trim().toLowerCase(),
-          password: document.getElementById('register-password').value.trim(),
           createdAt: new Date().toISOString()
         };
 
-        if (!user.name || !user.city || !user.whatsapp || !user.email || !user.password) {
-          setStatus(authStatus, 'Preencha todos os campos do cadastro.', 'error');
+        if (!account.name || !account.email) {
+          setStatus(authStatus, 'Preencha nome e e-mail para criar sua conta.', 'error');
           return;
         }
 
-        persistUser(user);
+        persistAccount(account);
+        persistSession(account);
         setStatus(authStatus, 'Conta criada com sucesso. Voce ja pode montar seu anuncio.', 'success');
         renderInterface();
         goTo('perfil');
@@ -351,7 +353,7 @@
     }
 
     logoutButton.addEventListener('click', function () {
-      window.localStorage.removeItem(storageKeys.user);
+      window.localStorage.removeItem(storageKeys.session);
       state.user = null;
       setAuthMode('login');
       setStatus(authStatus, 'Sessao encerrada. Voce pode entrar novamente quando quiser.', '');
@@ -394,9 +396,6 @@
     if (clearAdFormButton) {
       clearAdFormButton.addEventListener('click', function () {
         adForm.reset();
-        if (state.user) {
-          adLocation.value = state.user.city || '';
-        }
         setStatus(adStatus, 'Formulario limpo. Monte um novo rascunho quando quiser.', '');
       });
     }
