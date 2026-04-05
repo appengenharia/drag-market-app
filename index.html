@@ -143,15 +143,15 @@
 
             <section class="announce-gate" id="announce-gate">
               <article class="info-card">
-                <p class="section-label">Conta necessaria</p>
-                <h4>Entre ou crie sua conta para anunciar</h4>
-                <p class="panel-copy">
+                <p class="section-label" id="announce-gate-label">Conta necessaria</p>
+                <h4 id="announce-gate-title">Entre ou crie sua conta para anunciar</h4>
+                <p class="panel-copy" id="announce-gate-copy">
                   Assim que sua conta local estiver pronta, voce ja consegue acessar a etapa inicial do anuncio.
                 </p>
               </article>
               <div class="button-row">
-                <button class="primary-button" type="button" data-route="perfil">Entrar para anunciar</button>
-                <button class="ghost-button" type="button" data-auth-shortcut="register">Criar conta</button>
+                <button class="primary-button" type="button" id="announce-primary-action" data-route="perfil">Entrar para anunciar</button>
+                <button class="ghost-button" type="button" id="announce-secondary-action" data-auth-shortcut="register">Criar conta</button>
               </div>
             </section>
 
@@ -254,6 +254,10 @@
                     <span>E-mail</span>
                     <input type="email" id="register-email" placeholder="voce@marketcar.com" required />
                   </label>
+                  <label class="input-group">
+                    <span>Telefone</span>
+                    <input type="text" id="register-phone" placeholder="(00) 00000-0000" required />
+                  </label>
                   <button class="primary-button" type="submit">Criar conta</button>
                 </form>
 
@@ -274,12 +278,16 @@
 
                 <div class="profile-stats">
                   <article class="stat-card">
-                    <span class="stat-label">Status</span>
-                    <strong id="profile-status">Logado</strong>
+                    <span class="stat-label">Perfil</span>
+                    <strong id="profile-status">Comprador</strong>
                   </article>
                   <article class="stat-card">
-                    <span class="stat-label">E-mail</span>
+                    <span class="stat-label">Contato</span>
                     <strong id="profile-contact">voce@marketcar.com</strong>
+                  </article>
+                  <article class="stat-card">
+                    <span class="stat-label">Plano</span>
+                    <strong id="profile-plan">Nao ativo</strong>
                   </article>
                   <article class="stat-card">
                     <span class="stat-label">Rascunhos</span>
@@ -287,13 +295,54 @@
                   </article>
                 </div>
 
-                <div class="button-row">
-                  <button class="primary-button" type="button" data-route="anunciar">Criar anuncio</button>
+                <div class="button-row profile-actions">
+                  <button class="primary-button" type="button" id="activate-seller-button" data-route="planos">Quero vender</button>
+                  <button class="primary-button" type="button" id="go-ad-button" data-route="anunciar" hidden>Acessar anuncios</button>
                 </div>
 
                 <div class="draft-list" id="draft-list"></div>
               </section>
             </div>
+          </section>
+        </section>
+
+        <section class="view-card" data-view="planos">
+          <section class="panel-screen panel-screen-wide">
+            <p class="section-label">Planos</p>
+            <h3>Ative seu perfil de vendedor</h3>
+            <p class="panel-copy">
+              Escolha um plano visual para liberar o modo vendedor localmente. Nesta etapa nao existe pagamento real.
+            </p>
+
+            <div class="plan-grid">
+              <article class="plan-card" data-plan-card="mensal">
+                <p class="section-label">Plano mensal</p>
+                <h4>Mensal</h4>
+                <strong class="plan-price">R$ 29,90</strong>
+                <ul class="plan-list">
+                  <li>Perfil vendedor ativo</li>
+                  <li>Liberacao da area de anuncio</li>
+                  <li>Contato direto com compradores</li>
+                </ul>
+                <button class="primary-button" type="button" data-plan-select="mensal">Ativar mensal</button>
+              </article>
+
+              <article class="plan-card" data-plan-card="anual">
+                <p class="section-label">Plano anual</p>
+                <h4>Anual</h4>
+                <strong class="plan-price">R$ 299,90</strong>
+                <ul class="plan-list">
+                  <li>Status vendedor por mais tempo</li>
+                  <li>Base pronta para monetizacao futura</li>
+                  <li>Mesmo fluxo visual em toda a plataforma</li>
+                </ul>
+                <button class="primary-button" type="button" data-plan-select="anual">Ativar anual</button>
+              </article>
+            </div>
+
+            <p class="helper-text status-text" id="seller-plan-status">
+              A ativacao do vendedor e simulada localmente para validar UX e preparar a futura integracao com pagamento.
+            </p>
           </section>
         </section>
 

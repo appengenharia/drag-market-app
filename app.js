@@ -5,7 +5,8 @@
     detalhe: 'Detalhe',
     anunciar: 'Anunciar',
     mensagens: 'Mensagens',
-    perfil: 'Perfil'
+    perfil: 'Perfil',
+    planos: 'Planos'
   };
 
   var storageKeys = {
@@ -30,6 +31,7 @@
   var authShortcuts = document.querySelectorAll('[data-auth-shortcut]');
   var loginForm = document.getElementById('login-form');
   var registerForm = document.getElementById('register-form');
+  var registerPhone = document.getElementById('register-phone');
   var authEntry = document.getElementById('auth-entry');
   var authStatus = document.getElementById('auth-status');
   var profileSummary = document.getElementById('profile-summary');
@@ -37,10 +39,21 @@
   var profileMeta = document.getElementById('profile-meta');
   var profileStatus = document.getElementById('profile-status');
   var profileContact = document.getElementById('profile-contact');
+  var profilePlan = document.getElementById('profile-plan');
   var profileDrafts = document.getElementById('profile-drafts');
   var draftList = document.getElementById('draft-list');
   var logoutButton = document.getElementById('logout-button');
+  var activateSellerButton = document.getElementById('activate-seller-button');
+  var goAdButton = document.getElementById('go-ad-button');
+  var planButtons = document.querySelectorAll('[data-plan-select]');
+  var planCards = document.querySelectorAll('[data-plan-card]');
+  var sellerPlanStatus = document.getElementById('seller-plan-status');
   var announceGate = document.getElementById('announce-gate');
+  var announceGateLabel = document.getElementById('announce-gate-label');
+  var announceGateTitle = document.getElementById('announce-gate-title');
+  var announceGateCopy = document.getElementById('announce-gate-copy');
+  var announcePrimaryAction = document.getElementById('announce-primary-action');
+  var announceSecondaryAction = document.getElementById('announce-secondary-action');
   var adForm = document.getElementById('ad-form');
   var adStatus = document.getElementById('ad-status');
   var clearAdFormButton = document.getElementById('clear-ad-form');
@@ -54,6 +67,26 @@
 
   function normalizeRoute(route) {
     return Object.prototype.hasOwnProperty.call(routes, route) ? route : 'home';
+  }
+
+  function normalizeAccount(account) {
+    if (!account) {
+      return null;
+    }
+
+    var sellerActive = Boolean(account.sellerActive || account.sellerPlan);
+    var sellerPlan = sellerActive ? account.sellerPlan || 'mensal' : '';
+
+    return {
+      name: account.name || '',
+      email: (account.email || '').trim().toLowerCase(),
+      phone: account.phone || '',
+      sellerActive: sellerActive,
+      sellerPlan: sellerPlan,
+      role: sellerActive ? 'comprador-vendedor' : 'comprador',
+      createdAt: account.createdAt || new Date().toISOString(),
+      sellerActivatedAt: account.sellerActivatedAt || ''
+    };
   }
 
   function readStorage(key, fallback) {
@@ -70,19 +103,24 @@
   }
 
   function loadState() {
-    state.account = readStorage(storageKeys.account, null);
-    state.user = readStorage(storageKeys.session, null);
+    state.account = normalizeAccount(readStorage(storageKeys.account, null));
+    state.user = normalizeAccount(readStorage(storageKeys.session, null));
     state.drafts = readStorage(storageKeys.drafts, []);
   }
 
   function persistAccount(account) {
-    state.account = account;
-    writeStorage(storageKeys.account, account);
+    state.account = normalizeAccount(account);
+    writeStorage(storageKeys.account, state.account);
   }
 
   function persistSession(user) {
-    state.user = user;
-    writeStorage(storageKeys.session, user);
+    state.user = normalizeAccount(user);
+    writeStorage(storageKeys.session, state.user);
+  }
+
+  function syncAccount(user) {
+    persistAccount(user);
+    persistSession(user);
   }
 
   function persistDrafts(drafts) {
@@ -109,6 +147,14 @@
     }
 
     return count + ' rascunhos';
+  }
+
+  function formatPlanName(plan) {
+    if (!plan) {
+      return 'Nao ativo';
+    }
+
+    return plan.charAt(0).toUpperCase() + plan.slice(1);
   }
 
   function setAuthMode(mode) {
@@ -190,38 +236,93 @@
     }
 
     profileName.textContent = state.user.name;
-    profileMeta.textContent = state.user.email;
-    profileStatus.textContent = 'Logado localmente';
-    profileContact.textContent = state.user.email;
+    profileMeta.textContent = state.user.email + ' | ' + state.user.phone;
+    profileStatus.textContent = state.user.sellerActive ? 'Comprador + vendedor' : 'Comprador';
+    profileContact.textContent = state.user.phone;
+    profilePlan.textContent = state.user.sellerActive ? formatPlanName(state.user.sellerPlan) : 'Nao ativo';
     profileDrafts.textContent = formatDraftCount(state.drafts.length);
+    activateSellerButton.hidden = state.user.sellerActive;
+    goAdButton.hidden = !state.user.sellerActive;
     renderDraftList();
   }
 
   function renderAnnounce() {
     var isLoggedIn = Boolean(state.user);
+    var isSeller = isLoggedIn && state.user.sellerActive;
 
     if (announceGate) {
-      announceGate.hidden = isLoggedIn;
+      announceGate.hidden = isSeller;
     }
 
     if (adForm) {
-      adForm.hidden = !isLoggedIn;
+      adForm.hidden = !isSeller;
     }
 
     if (!isLoggedIn) {
+      announceGateLabel.textContent = 'Conta necessaria';
+      announceGateTitle.textContent = 'Entre ou crie sua conta para anunciar';
+      announceGateCopy.textContent = 'Assim que sua conta local estiver pronta, voce ja consegue acessar a etapa inicial do anuncio.';
+      announcePrimaryAction.textContent = 'Entrar para anunciar';
+      announcePrimaryAction.dataset.route = 'perfil';
+      announceSecondaryAction.hidden = false;
+      announceSecondaryAction.textContent = 'Criar conta';
+      announceSecondaryAction.dataset.authShortcut = 'register';
       setStatus(adStatus, 'Entre ou crie sua conta para montar o primeiro rascunho de anuncio.', '');
       return;
     }
 
+    if (!isSeller) {
+      announceGateLabel.textContent = 'Modo vendedor';
+      announceGateTitle.textContent = 'Ative seu perfil de vendedor para anunciar';
+      announceGateCopy.textContent = 'Sua conta ja esta pronta como comprador. Escolha um plano visual e libere a area de anuncios.';
+      announcePrimaryAction.textContent = 'Quero vender';
+      announcePrimaryAction.dataset.route = 'planos';
+      announceSecondaryAction.hidden = true;
+      setStatus(adStatus, 'Seu perfil atual e comprador. Ative um plano local para anunciar.', '');
+      return;
+    }
+
     adContactName.textContent = state.user.name;
-    adContactMeta.textContent = 'Contato local: ' + state.user.email;
+    adContactMeta.textContent = 'Contato local: ' + state.user.email + ' | ' + state.user.phone;
     populateAdFormFromLatestDraft();
     setStatus(adStatus, 'Seu rascunho pode ser salvo localmente nesta etapa e depois migrado para Firestore.', '');
+  }
+
+  function renderPlans() {
+    var isLoggedIn = Boolean(state.user);
+    var currentPlan = isLoggedIn && state.user.sellerActive ? state.user.sellerPlan : '';
+
+    planCards.forEach(function (card) {
+      card.classList.toggle('is-active', card.dataset.planCard === currentPlan);
+    });
+
+    planButtons.forEach(function (button) {
+      var isActivePlan = button.dataset.planSelect === currentPlan;
+      button.disabled = !isLoggedIn;
+      button.textContent = isActivePlan ? 'Plano ativo' : 'Ativar ' + formatPlanName(button.dataset.planSelect).toLowerCase();
+    });
+
+    if (!sellerPlanStatus) {
+      return;
+    }
+
+    if (!isLoggedIn) {
+      setStatus(sellerPlanStatus, 'Entre na sua conta para ativar o modo vendedor.', '');
+      return;
+    }
+
+    if (state.user.sellerActive) {
+      setStatus(sellerPlanStatus, 'Perfil vendedor ativo no plano ' + formatPlanName(state.user.sellerPlan) + '.', 'success');
+      return;
+    }
+
+    setStatus(sellerPlanStatus, 'Escolha um plano para ativar localmente o modo vendedor. Sem pagamento real nesta etapa.', '');
   }
 
   function renderInterface() {
     renderProfile();
     renderAnnounce();
+    renderPlans();
   }
 
   function updateView(route) {
@@ -318,7 +419,7 @@
         }
 
         persistSession(savedAccount);
-        setStatus(authStatus, 'Entrada concluida. Seu perfil esta pronto para anunciar.', 'success');
+        setStatus(authStatus, 'Entrada concluida. Sua conta local foi carregada.', 'success');
         renderInterface();
       });
     }
@@ -330,16 +431,18 @@
         var account = {
           name: document.getElementById('register-name').value.trim(),
           email: document.getElementById('register-email').value.trim().toLowerCase(),
+          phone: registerPhone.value.trim(),
+          sellerActive: false,
+          sellerPlan: '',
           createdAt: new Date().toISOString()
         };
 
-        if (!account.name || !account.email) {
-          setStatus(authStatus, 'Preencha nome e e-mail para criar sua conta.', 'error');
+        if (!account.name || !account.email || !account.phone) {
+          setStatus(authStatus, 'Preencha nome, e-mail e telefone para criar sua conta.', 'error');
           return;
         }
 
-        persistAccount(account);
-        persistSession(account);
+        syncAccount(account);
         setStatus(authStatus, 'Conta criada com sucesso. Voce ja pode montar seu anuncio.', 'success');
         renderInterface();
         goTo('perfil');
@@ -361,6 +464,33 @@
     });
   }
 
+  function bindPlanButtons() {
+    planButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        if (!state.user) {
+          goTo('perfil');
+          setStatus(sellerPlanStatus, 'Entre na conta para ativar um plano.', 'error');
+          return;
+        }
+
+        var updatedUser = normalizeAccount({
+          name: state.user.name,
+          email: state.user.email,
+          phone: state.user.phone,
+          sellerActive: true,
+          sellerPlan: button.dataset.planSelect,
+          sellerActivatedAt: new Date().toISOString(),
+          createdAt: state.user.createdAt
+        });
+
+        syncAccount(updatedUser);
+        setStatus(sellerPlanStatus, 'Plano ' + button.dataset.planSelect + ' ativado localmente. Seu modo vendedor ja esta liberado.', 'success');
+        renderInterface();
+        goTo('perfil');
+      });
+    });
+  }
+
   function bindAdForm() {
     if (adForm) {
       adForm.addEventListener('submit', function (event) {
@@ -369,6 +499,12 @@
         if (!state.user) {
           setStatus(adStatus, 'Entre na sua conta para salvar um rascunho.', 'error');
           goTo('perfil');
+          return;
+        }
+
+        if (!state.user.sellerActive) {
+          setStatus(adStatus, 'Ative o modo vendedor antes de salvar um anuncio.', 'error');
+          goTo('planos');
           return;
         }
 
@@ -433,6 +569,7 @@
     bindAuthSwitch();
     bindAuthForms();
     bindProfileActions();
+    bindPlanButtons();
     bindAdForm();
     bindBrowserNavigation();
     registerServiceWorker();
